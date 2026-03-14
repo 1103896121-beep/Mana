@@ -47,8 +47,10 @@ def create_doc():
     doc.add_paragraph('• 色彩方案：深层蓝 (Deep Blue)、神秘靛 (Indigo)、优雅紫 (Purple)、纯净白 (Clear White)。')
     doc.add_paragraph('• 设计元素：玻璃态 (Glassmorphism)、光晕 (Aura)、微动效 (Micro-animations)。')
 
-    # 5. 技术约束 (iOS 侧)
-    doc.add_heading('5. 技术约束与交互要求', level=1)
+    # 5. 技术架构与交互要求
+    doc.add_heading('5. 技术架构与交互要求', level=1)
+    doc.add_paragraph('• 架构方案：无后端纯前端架构 (Serverless Frontend-Only)。系统完全运行在用户苹果手机本地，无需外部服务器支持。')
+    doc.add_paragraph('• 数据持久化：利用浏览器 LocalStorage 或 IndexedDB 实现本地持久化方案，确保用户数据安全存储于设备本地且支持离线使用。')
     doc.add_paragraph('• 响应式设计：适配 iOS 各种屏幕尺寸及灵动岛等硬件特性。')
     doc.add_paragraph('• 动画引擎：底层需结合 Framer Motion 或 Canvas 实现复杂的物理粒子效果。')
     doc.add_paragraph('• 交互性能：保持 60/120 FPS 的极致流畅度，满足用户感官预期。')

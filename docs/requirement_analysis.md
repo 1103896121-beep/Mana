@@ -41,8 +41,10 @@ Mana 是一款专注于“能量管理”而非“清单堆砌”的高级效率
 ## 4. 目标用户 (Target Audience)
 那些厌倦了传统、沉重效率工具，追求内心平衡、视觉审美且注重精力管理的创造者与职场人士（iOS 用户）。
 
-## 5. 技术架构参考 (Technical Reference)
-- **平台**: Web (Vite + React + TS), 针对 iOS 移动端优化。
+## 5. 技术架构与性能约束 (Technical Architecture)
+- **架构方案**: **无后端纯前端架构 (Serverless Frontend-Only)**。系统完全运行在用户苹果手机本地浏览器或 PWA 环境中。
+- **数据持久化**: 使用 `localStorage` 或 `IndexedDB` 进行任务数据的本地存储，确保离线状态下依然功能完备。
+- **平台**: Web (Vite + React + TS), 深度适配 iOS 移动端 WebView 直触感。
 - **核心组件**:
     - `TaskSphere`: 物理引擎容器。
     - `EnergySlider`: 能量调节组件。
