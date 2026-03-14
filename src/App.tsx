@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, Moon, Sun } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CarePrompt from './components/CarePrompt';
 import './App.css';
@@ -8,90 +8,164 @@ import './App.css';
 interface Task {
   id: string;
   text: string;
-  manaValue: number;
+  duration: number;
+  createdAt: number;
 }
+
+type SortField = 'createdAt' | 'duration';
+type SortOrder = 'asc' | 'desc';
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [mana, setMana] = useState(100);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showInput, setShowInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
-  const [newTaskMana, setNewTaskMana] = useState(10);
-  const [completedToday, setCompletedToday] = useState(0);
+  const [newTaskDuration, setNewTaskDuration] = useState(30);
+  
+  // 统计数据
+  const [totalMinutesToday, setTotalMinutesToday] = useState(0);
+  const [completedCountToday, setCompletedCountToday] = useState(0);
+  const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
 
-  // 初始化：从本地存储加载数据
+  // 排序状态
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  // 初始化：加载本地存储
   useEffect(() => {
-    const savedTasks = localStorage.getItem('mana_tasks');
+    const savedTasks = localStorage.getItem('mana_tasks_v2');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
     
-    const savedMana = localStorage.getItem('mana_current');
-    if (savedMana) setMana(Number(savedMana));
+    const savedTheme = localStorage.getItem('mana_theme');
+    if (savedTheme) {
+      setTheme(savedTheme as 'dark' | 'light');
+      document.body.dataset.theme = savedTheme;
+    }
 
-    const savedCompleted = localStorage.getItem('mana_completed_count');
-    if (savedCompleted) setCompletedToday(Number(savedCompleted));
+    const savedStats = localStorage.getItem('mana_daily_stats');
+    if (savedStats) {
+      const stats = JSON.parse(savedStats);
+      setTotalMinutesToday(stats.minutes || 0);
+      setCompletedCountToday(stats.count || 0);
+    }
   }, []);
 
-  // 持久化：保存数据到本地存储
+  // 持久化
   useEffect(() => {
-    localStorage.setItem('mana_tasks', JSON.stringify(tasks));
-    localStorage.setItem('mana_current', mana.toString());
-    localStorage.setItem('mana_completed_count', completedToday.toString());
-  }, [tasks, mana, completedToday]);
+    localStorage.setItem('mana_tasks_v2', JSON.stringify(tasks));
+    localStorage.setItem('mana_theme', theme);
+    localStorage.setItem('mana_daily_stats', JSON.stringify({
+      minutes: totalMinutesToday,
+      count: completedCountToday
+    }));
+  }, [tasks, theme, totalMinutesToday, completedCountToday]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.body.dataset.theme = newTheme;
+  };
 
   const addTask = () => {
     if (!newTaskText) return;
     const newTask: Task = {
       id: Date.now().toString(),
       text: newTaskText,
-      manaValue: newTaskMana,
+      duration: newTaskDuration,
+      createdAt: Date.now(),
     };
     setTasks([newTask, ...tasks]);
     setNewTaskText('');
     setShowInput(false);
   };
 
-  const handleComplete = (id: string, manaValue: number) => {
-    setTasks(tasks.filter(t => t.id !== id));
-    setMana(prev => Math.min(100, prev + (manaValue / 2))); // 回复部分能量
-    setCompletedToday(prev => prev + 1);
+  const handleComplete = (id: string, duration: number) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+    setTotalMinutesToday(prev => prev + duration);
+    setCompletedCountToday(prev => prev + 1);
+    
+    // 追踪最近 30 分钟内的完成频率
+    const now = Date.now();
+    setRecentCompletions(prev => {
+      const filtered = prev.filter(t => now - t < 30 * 60000);
+      return [...filtered, now];
+    });
   };
 
   const handleDelete = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  // 排序处理
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      const valA = a[sortField];
+      const valB = b[sortField];
+      return sortOrder === 'desc' ? valB - valA : valA - valB;
+    });
+  }, [tasks, sortField, sortOrder]);
+
+  const cycleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
   };
 
   return (
     <div className="app-container">
-      {/* 状态栏 */}
       <header className="mana-header glass-panel aura-float">
-        <div className="mana-pool-info">
-          <span className="mana-label">ENERGY CORE</span>
-          <h1 className="mana-value">
-            {Math.round(mana)} <span className="mana-unit">MP</span>
-          </h1>
+        <div className="header-top">
+          <div className="mana-pool-info">
+            <span className="mana-label">DAILY PRODUCTIVITY</span>
+            <h1 className="mana-value">
+              {totalMinutesToday} <span className="mana-unit">mins</span>
+            </h1>
+          </div>
+          <button className="theme-toggle" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+          </button>
         </div>
         <div className="mana-progress-container">
           <motion.div 
             className="mana-progress-bar" 
             initial={{ width: 0 }}
-            animate={{ width: `${mana}%` }}
+            animate={{ width: `${Math.min(100, (totalMinutesToday / 300) * 100)}%` }}
           />
         </div>
       </header>
 
-      {/* 任务区域 */}
       <main className="task-viewport">
         <div className="task-list-header">
-          <h2>Mana Vessels</h2>
+          <h2>Time Vessels</h2>
+          <div className="header-actions">
+            <button 
+              className={`add-task-btn ${showInput ? 'active' : ''}`} 
+              onClick={() => setShowInput(!showInput)}
+            >
+              <Plus size={32} style={{ transform: showInput ? 'rotate(45deg)' : 'none' }} />
+            </button>
+          </div>
+        </div>
+
+        {/* 排序控制 */}
+        <div className="sorting-controls">
           <button 
-            className={`add-task-btn ${showInput ? 'active' : ''}`} 
-            onClick={() => setShowInput(!showInput)}
+            className={`sort-btn ${sortField === 'createdAt' ? 'active' : ''}`}
+            onClick={() => cycleSort('createdAt')}
           >
-            <Plus size={24} style={{ transform: showInput ? 'rotate(45deg)' : 'none' }} />
+            Sort by Time {sortField === 'createdAt' && (sortOrder === 'desc' ? '↓' : '↑')}
+          </button>
+          <button 
+            className={`sort-btn ${sortField === 'duration' ? 'active' : ''}`}
+            onClick={() => cycleSort('duration')}
+          >
+            Sort by Duration {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
           </button>
         </div>
 
-        {/* 快速添加输入框 */}
         <AnimatePresence>
           {showInput && (
             <motion.div 
@@ -103,33 +177,35 @@ const App: React.FC = () => {
               <input 
                 autoFocus
                 type="text" 
-                placeholder="What intention shall we set?"
+                placeholder="What shall we create today?"
                 value={newTaskText}
                 onChange={(e) => setNewTaskText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addTask()}
               />
-              <div className="mana-cost-selector">
-                <label>Energy Required: {newTaskMana} MP</label>
+              <div className="duration-selector">
+                <label>Time Investment: {newTaskDuration} minutes</label>
                 <input 
-                  type="range" min="5" max="50" step="5"
-                  value={newTaskMana}
-                  onChange={(e) => setNewTaskMana(Number(e.target.value))}
+                  type="range" min="5" max="300" step="5"
+                  value={newTaskDuration}
+                  onChange={(e) => setNewTaskDuration(Number(e.target.value))}
                 />
               </div>
-              <button className="confirm-add-btn" onClick={addTask}>Establish Flow</button>
+              <button className="confirm-add-btn" onClick={addTask}>Establish Intention</button>
             </motion.div>
           )}
         </AnimatePresence>
         
-        {/* 拖拽排序列表 */}
         <Reorder.Group 
           axis="y" 
-          values={tasks} 
-          onReorder={setTasks}
+          values={sortedTasks} 
+          onReorder={(newOrder) => {
+            // 只有在没有特定排序字段或处于默认降序创建时间时允许拖拽重排（暂定逻辑）
+            setTasks(newOrder);
+          }}
           className="bubble-list-container"
         >
           <AnimatePresence mode="popLayout">
-            {tasks.map(task => (
+            {sortedTasks.map(task => (
               <Reorder.Item key={task.id} value={task}>
                 <TaskBubble 
                   {...task}
@@ -142,14 +218,17 @@ const App: React.FC = () => {
           
           {tasks.length === 0 && !showInput && (
             <div className="empty-state">
-              <p>Your energy is still. Create a task to start the flow.</p>
+              <p>Your timeline is clear. Set an intention to begin.</p>
             </div>
           )}
         </Reorder.Group>
       </main>
 
-      {/* 智能关怀提示 */}
-      <CarePrompt taskCount={completedToday} />
+      <CarePrompt 
+        taskCount={completedCountToday} 
+        totalMinutes={totalMinutesToday}
+        recentCount={recentCompletions.length}
+      />
     </div>
   );
 };

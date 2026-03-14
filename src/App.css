@@ -8,34 +8,56 @@
   overflow: hidden;
 }
 
-.mana-pool-info {
+.header-top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
+}
+
+.mana-pool-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .mana-label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-accent);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
 }
 
 .mana-value {
-  font-size: 2.5rem;
+  font-size: 3.5rem; /* Bigger display */
   font-weight: 300;
+  line-height: 1;
+  margin-top: 4px;
 }
 
 .mana-unit {
-  font-size: 1rem;
+  font-size: 1.2rem;
   opacity: 0.6;
+  margin-left: 4px;
+}
+
+.theme-toggle {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-main);
+  transition: var(--transition-bounce);
 }
 
 .mana-progress-container {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  height: 10px; /* Thicker bar */
+  background: var(--glass-bg);
+  border-radius: 5px;
   overflow: hidden;
 }
 
@@ -61,75 +83,116 @@
 }
 
 .task-list-header h2 {
-  font-size: 1.25rem;
-  font-weight: 500;
-  opacity: 0.9;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .add-task-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
   border: none;
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  color: var(--color-white);
-  font-size: 1.5rem;
+  color: var(--color-text-main);
   cursor: pointer;
   border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--transition-bounce);
 }
 
-.add-task-btn:active {
-  transform: scale(0.9);
+.add-task-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.sorting-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  overflow-x: auto;
+}
+
+.sort-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+}
+
+.sort-btn.active {
+  background: var(--color-accent);
+  color: white;
+  border-color: transparent;
 }
 
 .quick-add-panel {
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  overflow: hidden;
+  gap: var(--spacing-lg);
 }
 
 .quick-add-panel input[type="text"] {
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--glass-border);
-  color: var(--color-white);
+  border-bottom: 2px solid var(--glass-border);
+  color: var(--color-text-main);
   padding: var(--spacing-sm) 0;
-  font-size: 1.1rem;
+  font-size: 1.5rem; /* Much bigger input */
   outline: none;
+  transition: border-color 0.3s;
 }
 
-.mana-cost-selector {
+.quick-add-panel input[type="text"]:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+.duration-selector {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
 }
 
-.mana-cost-selector label {
-  font-size: 0.8rem;
+.duration-selector label {
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
-.mana-cost-selector input[type="range"] {
+.duration-selector input[type="range"] {
   accent-color: var(--color-primary);
+  height: 8px;
 }
 
 .confirm-add-btn {
   background: var(--color-primary);
   color: white;
   border: none;
-  padding: var(--spacing-sm);
+  padding: 20px;
   border-radius: var(--radius-card);
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
+  transition: var(--transition-bounce);
 }
 
-.add-task-btn.active {
-  background: var(--color-primary);
+.confirm-add-btn:active {
+  transform: scale(0.95);
 }
 
 .footer-console {
@@ -137,7 +200,7 @@
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
   text-align: center;
-  min-height: 80px;
+  min-height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,13 +208,14 @@
 
 .care-prompt {
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   color: var(--color-text-muted);
+  line-height: 1.6;
 }
 
 .empty-state {
-  margin-top: 100px;
+  margin-top: 60px;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
