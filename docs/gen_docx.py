@@ -14,48 +14,32 @@ def create_doc():
     doc.add_heading('1. 项目背景与愿景', level=1)
     p = doc.add_paragraph()
     p.add_run('“生产力不是清单的堆砌，而是能量的流动。”').bold = True
-    doc.add_paragraph('Mana 是一款旨在打破传统“枯燥列表式”任务管理的创新应用。它将抽象的任务管理具象化为“能量管理”，通过物理引擎、魔法化视觉和灵动音效，为用户提供一种掌控感与愉悦感并存的效率体验。')
+    doc.add_paragraph('Mana 是一款针对 iOS 极致优化的效率工具，通过魔法动效与能量管理理念，将枯燥的任务管理转化为愉悦的感官体验。')
 
-    # 2. 目标用户
-    doc.add_heading('2. 目标用户', level=1)
-    doc.add_paragraph('主要面向追求审美、重视心理平衡、活跃于 iOS 生态系统的创造者、职场精英及极简主义者。')
+    # 2. 核心功能
+    doc.add_heading('2. 核心功能需求', level=1)
+    
+    doc.add_heading('2.1 高级动效与交互', level=2)
+    doc.add_paragraph('• 紧凑爆炸反馈：任务完成触发 1.8s 的强化爆炸动效（0.8s 膨胀 + 1.0s 粒子喷发）。')
+    doc.add_paragraph('• 过期任务一键清理：支持清除超过 7 天未完成的积压任务。')
+    
+    doc.add_heading('2.2 iOS 风格视觉优化', level=2)
+    doc.add_paragraph('• 苹果美学配色：精调全局字体颜色、亮度和对比度，确保在亮/暗模式下均符合 iOS 高端用户习惯。')
+    doc.add_paragraph('• 增强时间戳显示：任务列表显示完整的“年-月-日 时:分”时间标记。')
+    
+    doc.add_heading('2.3 能量管理与排序', level=2)
+    doc.add_paragraph('• 时间驱动模型：任务以所需时间（1-300min）为核心单位。')
+    doc.add_paragraph('• 智能关怀监测：基于数量、时长、频率三大维度的压力监测与休息提示。')
 
-    # 3. 核心功能需求
-    doc.add_heading('3. 核心功能需求', level=1)
-    
-    doc.add_heading('3.1 时间驱动的任务系统', level=2)
-    doc.add_paragraph('• 任务时长分配：将原有的能量值概念转化为实用的“所需时间（分钟）”，支持 1-300 分钟设定。')
-    doc.add_paragraph('• 可视化进度：界面直观呈现每日积累的产出时间对比，增强掌控感。')
-    doc.add_paragraph('• 膨胀与爆炸反馈：任务完成时触发 2-3s 的气泡膨胀动效，模拟压力积聚后释放的物理质感，随后触发粒子爆炸销毁。')
-    
-    doc.add_heading('3.2 任务列表与排序系统', level=2)
-    doc.add_paragraph('• 多维排序：支持按创建时间、所需时长进行升序/降序排列。')
-    doc.add_paragraph('• 气泡列表：任务项采用圆润透明的气泡包裹，列表项显示创建的具体时间点。')
-    doc.add_paragraph('• 比例优化：针对 iOS 用户调大全局字体与交互组件比例，确保单手操作的准确性。')
-    
-    doc.add_heading('3.3 动态动效与智能关怀提示', level=2)
-    doc.add_paragraph('• 膨胀与爆炸反馈：任务完成时触发 2-3s 的气泡膨胀动效，模拟压力积聚后释放的物理质感。')
-    doc.add_paragraph('• 智能提醒触发方案：系统根据以下三个维度实时监测并随机弹出关怀提示词：')
-    doc.add_paragraph('  1. 累计数量：每日累计每完成 5 个任务；')
-    doc.add_paragraph('  2. 累计时长：每日累计任务总时长达到 120 分钟或其倍数；')
-    doc.add_paragraph('  3. 高频强度：30 分钟内连续完成 3 项及以上任务。')
-    
-    doc.add_heading('3.4 艺术化产出分享', level=2)
-    doc.add_paragraph('• 定制卡片：将一天的生产力数据转化为极致简约的视觉卡片，便于社交分享。')
+    # 3. 视觉语言
+    doc.add_heading('3. 视觉语言', level=1)
+    doc.add_paragraph('• 双色模式：深度定制的 Light & Dark 系统。')
+    doc.add_paragraph('• 交互规范：超大操作热区，更适合大屏幕 iOS 设备单手操作。')
 
-    # 4. 视觉语言与多主题
-    doc.add_heading('4. 视觉语言与多主题支持', level=1)
-    doc.add_paragraph('• 关键词：灵动、空灵、平衡、双相。')
-    doc.add_paragraph('• 双色模式：支持亮色 (Light) 与暗色 (Dark) 两套视觉系统，满足全天候使用场景。')
-    doc.add_paragraph('• 设计元素：玻璃态 (Glassmorphism)、微动效 (Micro-animations)、大气泡感。')
-
-    # 5. 技术架构与交互要求
-    doc.add_heading('5. 技术架构与交互要求', level=1)
-    doc.add_paragraph('• 架构方案：无后端纯前端架构 (Serverless Frontend-Only)。系统完全运行在用户苹果手机本地，无需外部服务器支持。')
-    doc.add_paragraph('• 数据持久化：利用浏览器 LocalStorage 或 IndexedDB 实现本地持久化方案，确保用户数据安全存储于设备本地且支持离线使用。')
-    doc.add_paragraph('• 响应式设计：适配 iOS 各种屏幕尺寸及灵动岛等硬件特性。')
-    doc.add_paragraph('• 动画引擎：底层需结合 Framer Motion 或 Canvas 实现复杂的物理粒子效果。')
-    doc.add_paragraph('• 交互性能：保持 60/120 FPS 的极致流畅度，满足用户感官预期。')
+    # 4. 技术栈
+    doc.add_heading('4. 技术栈', level=1)
+    doc.add_paragraph('• 纯前端架构 (React + TS + Vite + Framer Motion)。')
+    doc.add_paragraph('• 本地持久化保证数据完全归属于用户设备。')
 
     # Save
     output_path = os.path.join('e:\\workrooten\\Mana\\docs', 'Mana-产品需求分析文档.docx')

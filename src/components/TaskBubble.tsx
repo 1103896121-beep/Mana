@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Trash2, GripVertical, Clock } from 'lucide-react';
+import { Check, Trash2, GripVertical, Clock, Calendar } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import './TaskBubble.css';
 
@@ -17,33 +17,59 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
   const [isExpanding, setIsExpanding] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // 格式化为：年-月-日 时:分
+  const formatFullDateTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${d} ${hh}:${mm}`;
   };
 
   const handleComplete = () => {
     setIsExpanding(true);
     
-    // 2.5s Expansion phase
+    // 0.8s 极速膨胀阶段 (Rapid expansion phase)
     setTimeout(() => {
       setIsExpanding(false);
       setIsDone(true);
       
-      // Explosion Particle Effect
-      const triangle = confetti.shapeFromPath({ path: 'M0 10 L5 0 L10 10z' });
-      confetti({
-        shapes: [triangle],
-        particleCount: 60,
-        spread: 90,
+      // 增强型炫酷粒子效果 (Enhanced Cool Particle Effect)
+      const count = 150;
+      const defaults: confetti.Options = {
         origin: { y: 0.6 },
-        colors: ['#6366f1', '#a855f7', '#38bdf8']
-      });
+        spread: 360,
+        ticks: 100,
+        gravity: 0.8,
+        decay: 0.94,
+        startVelocity: 30,
+        shapes: ['circle', 'square'],
+        colors: ['#007aff', '#5856d6', '#64d2ff', '#ff2d55', '#ffffff']
+      };
 
-      // Notify completion after explosion animation
+      function shoot(angle: number, scalar: number) {
+        confetti({
+          ...defaults,
+          particleCount: Math.floor(count * scalar),
+          angle,
+          scalar
+        });
+      }
+
+      shoot(0, 2);
+      shoot(60, 1.5);
+      shoot(120, 1.5);
+      shoot(180, 2);
+      shoot(240, 1.5);
+      shoot(300, 1.5);
+
+      // 1.0s 后正式通知完成 (Notify completion after 1s explosion)
       setTimeout(() => {
         onComplete(id, duration);
-      }, 500);
-    }, 2500);
+      }, 1000);
+    }, 800);
   };
 
   return (
@@ -54,17 +80,17 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ 
             opacity: 1, 
-            scale: isExpanding ? 1.4 : 1, 
+            scale: isExpanding ? 1.5 : 1, 
             y: 0,
-            filter: isExpanding ? 'blur(2px)' : 'blur(0px)',
-            boxShadow: isExpanding ? 'var(--aura-mana-high)' : 'var(--glass-shadow)'
+            filter: isExpanding ? 'blur(4px) brightness(1.2)' : 'blur(0px) brightness(1)',
+            boxShadow: isExpanding ? '0 0 50px var(--color-primary)' : 'var(--glass-shadow)'
           }}
-          exit={{ opacity: 0, scale: 2, filter: 'blur(20px)' }}
+          exit={{ opacity: 0, scale: 2.5, filter: 'blur(30px)' }}
           transition={{ 
-            scale: { duration: isExpanding ? 2.5 : 0.4, ease: "easeInOut" },
+            scale: { duration: isExpanding ? 0.8 : 0.4, ease: "circOut" },
             default: { duration: 0.4 }
           }}
-          whileHover={!isExpanding ? { scale: 1.02 } : {}}
+          whileHover={!isExpanding ? { scale: 1.02, backgroundColor: 'var(--color-bg-secondary)' } : {}}
           className={`task-bubble-item glass-panel ${isExpanding ? 'expanding' : ''}`}
         >
           <div className="drag-handle">
@@ -74,10 +100,13 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
           <div className="task-content">
             <div className="task-top-row">
               <span className="task-text">{text}</span>
-              <span className="task-time-stamp">{formatTime(createdAt)}</span>
+              <div className="task-time-stamp">
+                <Calendar size={12} className="meta-icon-small" />
+                <span>{formatFullDateTime(createdAt)}</span>
+              </div>
             </div>
             <div className="task-meta">
-              <Clock size={14} className="meta-icon" />
+              <Clock size={16} className="meta-icon" />
               <span className="task-duration">{duration} mins</span>
             </div>
           </div>
@@ -88,7 +117,7 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
               onClick={!isExpanding ? handleComplete : undefined}
               title="Release Potential"
             >
-              <Check size={24} />
+              <Check size={26} />
             </button>
             <button 
               className="action-btn delete-btn" 

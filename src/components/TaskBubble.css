@@ -10,6 +10,11 @@
   z-index: 1;
 }
 
+.task-bubble-item:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-primary);
+}
+
 .task-bubble-item.expanding {
   z-index: 100;
   pointer-events: none;
@@ -23,57 +28,65 @@
   padding: 4px;
 }
 
-.drag-handle:active {
-  cursor: grabbing;
-}
-
 .task-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .task-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .task-text {
-  font-size: 1.2rem; /* Scaled up */
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-text-main);
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .task-time-stamp {
   font-size: 0.7rem;
   color: var(--color-text-muted);
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.meta-icon-small {
+  opacity: 0.6;
 }
 
 .task-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--color-accent);
+  gap: 8px;
+  color: var(--color-primary);
+  margin-top: 4px;
 }
 
 .task-duration {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 .task-actions {
   display: flex;
   gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .action-btn {
-  width: 48px; /* Bigger buttons */
-  height: 48px;
-  border-radius: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   display: flex;
@@ -85,20 +98,20 @@
 }
 
 .action-btn.disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+  opacity: 0.2;
 }
 
 .complete-btn:hover:not(.disabled) {
   background: var(--color-primary);
   color: white;
-  box-shadow: var(--aura-mana-high);
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(0, 122, 255, 0.4);
 }
 
 .delete-btn:hover {
-  background: rgba(244, 63, 94, 0.15);
-  color: #f43f5e;
-  border-color: rgba(244, 63, 94, 0.3);
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+  border-color: rgba(255, 59, 48, 0.3);
 }
 
 .action-btn:active:not(.disabled) {

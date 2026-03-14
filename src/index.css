@@ -1,52 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* 基础比例调大 (Scaled up base) */
+  /* iOS-inspired base scale */
   font-size: 18px; 
 
-  /* 核心色彩 - 暗色模式默认 (Dark Mode Default) */
-  --color-bg-primary: #0a0c10;
-  --color-bg-secondary: #131720;
-  --color-primary: #6366f1; /* Indigo */
-  --color-secondary: #a855f7; /* Purple */
-  --color-accent: #38bdf8; /* Sky Blue */
+  /* iOS Dark Mode Palette (System Gray layout) */
+  --color-bg-primary: #000000; /* Pure black for OLED */
+  --color-bg-secondary: #1c1c1e; /* System Gray 6 */
+  --color-primary: #007aff; /* iOS System Blue */
+  --color-secondary: #5856d6; /* iOS System Indigo */
+  --color-accent: #64d2ff; /* iOS System Sky Blue */
   --color-white: #ffffff;
-  --color-text-main: rgba(255, 255, 255, 0.95);
-  --color-text-muted: rgba(255, 255, 255, 0.6);
+  --color-text-main: #ffffff;
+  --color-text-muted: #8e8e93; /* System Gray */
   
-  /* Glassmorphism Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.05);
+  /* Glassmorphism Tokens (Higher Quality) */
+  --glass-bg: rgba(28, 28, 30, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-blur: blur(20px);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --glass-blur: blur(30px);
 
-  /* Aura & Glow Effects */
-  --aura-mana-low: 0 0 20px rgba(244, 63, 94, 0.3);
-  --aura-mana-high: 0 0 40px rgba(56, 189, 248, 0.4);
+  /* Aura & Glow Effects (Subtle & Elegant) */
+  --aura-mana-low: 0 0 15px rgba(255, 59, 48, 0.2);
+  --aura-mana-high: 0 0 30px rgba(0, 122, 255, 0.3);
   
-  /* 间距与圆角调大 (Scaled up spacing and radius) */
-  --spacing-xs: 6px;
-  --spacing-sm: 10px;
+  /* Spacing & Sizing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
   --spacing-md: 20px;
   --spacing-lg: 32px;
   --spacing-xl: 48px;
-  --radius-bubble: 32px;
-  --radius-card: 24px;
+  --radius-bubble: 28px;
+  --radius-card: 20px;
   
   /* Transitions */
-  --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  --transition-bounce: all 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-bounce: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 [data-theme='light'] {
-  --color-bg-primary: #f8fafc;
+  --color-bg-primary: #f2f2f7; /* System Gray 6 Light */
   --color-bg-secondary: #ffffff;
-  --color-text-main: #1e293b;
-  --color-text-muted: #64748b;
-  --glass-bg: rgba(0, 0, 0, 0.03);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-  --aura-mana-high: 0 10px 30px rgba(99, 102, 241, 0.2);
+  --color-text-main: #000000;
+  --color-text-muted: #8e8e93;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --aura-mana-high: 0 10px 25px rgba(0, 122, 255, 0.15);
 }
 
 * {
@@ -57,25 +57,26 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-main);
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 h1, h2, h3, h4, .mana-font {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Outfit', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  font-weight: 600;
 }
 
 /* Base Layout Containers */
 .app-container {
   width: 100%;
-  max-width: 600px; /* 适当调宽适配大字体 */
+  max-width: 580px; 
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
@@ -96,11 +97,11 @@ h1, h2, h3, h4, .mana-font {
 
 /* Animations */
 @keyframes aura-pulse {
-  0% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 0.5; }
+  0% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.03); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0.6; }
 }
 
 .aura-float {
-  animation: aura-pulse 4s infinite ease-in-out;
+  animation: aura-pulse 3s infinite ease-in-out;
 }
