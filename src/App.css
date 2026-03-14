@@ -31,7 +31,7 @@
   font-size: 3rem;
   font-weight: 300;
   line-height: 1.1;
-  color: var(--color-text-main);
+  color: var(--color-text-header);
 }
 
 .mana-unit {
@@ -85,6 +85,7 @@
   font-size: 1.7rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--color-text-header);
 }
 
 .add-task-btn {
@@ -109,19 +110,26 @@
   box-shadow: none;
 }
 
-.sorting-controls {
+/* 控制栏: 排序按钮与清理按钮水平排列 */
+.controls-bar {
   display: flex;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
+  align-items: center;
   padding: 4px 0;
 }
 
+.sorting-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
 .sort-btn {
-  padding: 10px 18px;
-  border-radius: 20px;
+  padding: 8px 14px; /* Slight scale down for compact look */
+  border-radius: 18px;
   background: var(--color-bg-secondary);
   border: 1px solid var(--glass-border);
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-smooth);
@@ -131,6 +139,24 @@
   background: var(--color-primary);
   color: white;
   border-color: transparent;
+}
+
+.clear-expired-btn-mini {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: transparent;
+  border: 1px solid #ff3b30;
+  color: #ff3b30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.clear-expired-btn-mini:hover {
+  background: rgba(255, 59, 48, 0.1);
 }
 
 .quick-add-panel {
@@ -174,36 +200,6 @@
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-bounce);
-}
-
-.list-footer-actions {
-  display: flex;
-  justify-content: center;
-  padding: var(--spacing-lg) 0;
-}
-
-.clear-expired-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 25px;
-  background: transparent;
-  border: 1px solid #ff3b30;
-  color: #ff3b30;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.clear-expired-btn:hover {
-  background: rgba(255, 59, 48, 0.05);
-}
-
-.clear-expired-btn:active {
-  transform: scale(0.95);
-  opacity: 0.7;
 }
 
 .footer-console {

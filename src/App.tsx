@@ -12,7 +12,7 @@ interface Task {
   createdAt: number;
 }
 
-type SortField = 'createdAt' | 'duration';
+type SortField = 'createdAt' | 'duration' | 'manual';
 type SortOrder = 'asc' | 'desc';
 
 const App: React.FC = () => {
@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
 
   // 排序状态
-  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortField, setSortField] = useState<SortField>('manual');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // 初始化
@@ -80,6 +80,8 @@ const App: React.FC = () => {
     setTasks([newTask, ...tasks]);
     setNewTaskText('');
     setShowInput(false);
+    // 添加新任务时保持手动排序模式
+    setSortField('manual');
   };
 
   const clearExpiredTasks = () => {
@@ -112,7 +114,9 @@ const App: React.FC = () => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  const sortedTasks = useMemo(() => {
+  // 排序处理
+  const displayTasks = useMemo(() => {
+    if (sortField === 'manual') return tasks;
     return [...tasks].sort((a, b) => {
       const valA = a[sortField];
       const valB = b[sortField];
@@ -120,12 +124,20 @@ const App: React.FC = () => {
     });
   }, [tasks, sortField, sortOrder]);
 
-  const cycleSort = (field: SortField) => {
+  const cycleSort = (field: Exclude<SortField, 'manual'>) => {
     if (sortField === field) {
       setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
     } else {
       setSortField(field);
       setSortOrder('desc');
+    }
+  };
+
+  // 修复拖拽重排逻辑: 当在非手动排序模式下拖拽时，应先切换到手动模式或同步顺序
+  const handleReorder = (newOrder: Task[]) => {
+    setTasks(newOrder);
+    if (sortField !== 'manual') {
+      setSortField('manual');
     }
   };
 
@@ -165,18 +177,25 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="sorting-controls">
-          <button 
-            className={`sort-btn ${sortField === 'createdAt' ? 'active' : ''}`}
-            onClick={() => cycleSort('createdAt')}
-          >
-            Sort by Time {sortField === 'createdAt' && (sortOrder === 'desc' ? '↓' : '↑')}
-          </button>
-          <button 
-            className={`sort-btn ${sortField === 'duration' ? 'active' : ''}`}
-            onClick={() => cycleSort('duration')}
-          >
-            Sort by Duration {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
+        {/* 控制栏: 排序 + 清除功能并排 */}
+        <div className="controls-bar">
+          <div className="sorting-controls">
+            <button 
+              className={`sort-btn ${sortField === 'createdAt' ? 'active' : ''}`}
+              onClick={() => cycleSort('createdAt')}
+            >
+              Time {sortField === 'createdAt' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
+            <button 
+              className={`sort-btn ${sortField === 'duration' ? 'active' : ''}`}
+              onClick={() => cycleSort('duration')}
+            >
+              Dur. {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
+          </div>
+          
+          <button className="clear-expired-btn-mini" onClick={clearExpiredTasks} title="Clear Tasks > 7 Days">
+            <Trash2 size={18} />
           </button>
         </div>
 
@@ -211,12 +230,12 @@ const App: React.FC = () => {
         
         <Reorder.Group 
           axis="y" 
-          values={sortedTasks} 
-          onReorder={setTasks}
+          values={displayTasks} 
+          onReorder={handleReorder}
           className="bubble-list-container"
         >
           <AnimatePresence mode="popLayout">
-            {sortedTasks.map(task => (
+            {displayTasks.map(task => (
               <Reorder.Item key={task.id} value={task}>
                 <TaskBubble 
                   {...task}
@@ -233,15 +252,6 @@ const App: React.FC = () => {
             </div>
           )}
         </Reorder.Group>
-
-        {tasks.length > 0 && (
-          <div className="list-footer-actions">
-            <button className="clear-expired-btn" onClick={clearExpiredTasks}>
-              <Trash2 size={16} />
-              <span>Clear Tasks {'>'} 7 Days</span>
-            </button>
-          </div>
-        )}
       </main>
 
       <CarePrompt 
