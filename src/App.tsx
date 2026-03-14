@@ -4,7 +4,15 @@ import { Plus, Moon, Sun, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CarePrompt from './components/CarePrompt';
 import Battery from './components/Battery';
+import StatsModal from './components/StatsModal';
+import { BarChart3 } from 'lucide-react';
 import './App.css';
+
+interface DailyLog {
+  date: string;
+  minutes: number;
+  count: number;
+}
 
 interface Task {
   id: string;
@@ -31,6 +39,11 @@ const App: React.FC = () => {
   const [completedCountToday, setCompletedCountToday] = useState(0);
   const [batteryLevel, setBatteryLevel] = useState(100);
   const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
+  
+  // 长期统计
+  const [history, setHistory] = useState<DailyLog[]>([]);
+  const [totalMinutesEver, setTotalMinutesEver] = useState(0);
+  const [showStats, setShowStats] = useState(false);
 
   // 排序状态
   const [sortField, setSortField] = useState<SortField>('manual');
@@ -65,6 +78,25 @@ const App: React.FC = () => {
 
     const savedTasks = localStorage.getItem('mana_tasks_v5');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
+
+    // 加载历史
+    const savedHistory = localStorage.getItem('mana_history_v1');
+    if (savedHistory) {
+      const parsed = JSON.parse(savedHistory);
+      // 确保包含今天的数据
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (!parsed.find((h: DailyLog) => h.date === todayStr)) {
+        parsed.push({ date: todayStr, minutes: 0, count: 0 });
+      }
+      // 只保留最近7天
+      const last7Days = parsed.slice(-7);
+      setHistory(last7Days);
+    } else {
+      setHistory([{ date: new Date().toISOString().split('T')[0], minutes: 0, count: 0 }]);
+    }
+
+    const savedTotalEver = localStorage.getItem('mana_total_ever');
+    if (savedTotalEver) setTotalMinutesEver(Number(savedTotalEver));
   }, []);
 
   // 持久化
@@ -75,7 +107,18 @@ const App: React.FC = () => {
       minutes: totalMinutesToday,
       count: completedCountToday
     }));
-  }, [tasks, theme, totalMinutesToday, completedCountToday]);
+
+    // 更新历史记录中的今日数据
+    const todayStr = new Date().toISOString().split('T')[0];
+    setHistory(prev => {
+      const newHistory = prev.map(h => 
+        h.date === todayStr ? { ...h, minutes: totalMinutesToday, count: completedCountToday } : h
+      );
+      localStorage.setItem('mana_history_v1', JSON.stringify(newHistory));
+      return newHistory;
+    });
+    localStorage.setItem('mana_total_ever', totalMinutesEver.toString());
+  }, [tasks, theme, totalMinutesToday, completedCountToday, totalMinutesEver]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -110,6 +153,7 @@ const App: React.FC = () => {
   const handleComplete = (id: string, duration: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
     setTotalMinutesToday(prev => prev + duration);
+    setTotalMinutesEver(prev => prev + duration);
     setCompletedCountToday(prev => {
       const newCount = prev + 1;
       setBatteryLevel(Math.max(0, 100 - newCount * 12));
@@ -159,6 +203,9 @@ const App: React.FC = () => {
           </div>
           <div className="header-status-group">
             <Battery percentage={batteryLevel} />
+            <button className="stats-trigger-btn" onClick={() => setShowStats(true)}>
+              <BarChart3 size={24} />
+            </button>
             <button className="theme-toggle" onClick={toggleTheme}>
               {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
             </button>
@@ -292,6 +339,13 @@ const App: React.FC = () => {
         totalMinutes={totalMinutesToday}
         recentCount={recentCompletions.length}
         batteryLevel={batteryLevel}
+      />
+
+      <StatsModal 
+        isOpen={showStats}
+        onClose={() => setShowStats(false)}
+        history={history}
+        totalMinutesEver={totalMinutesEver}
       />
     </div>
   );

@@ -64,12 +64,47 @@
 }
 
 body {
-  background-color: var(--color-bg-primary);
+  background-color: #1c1c1e; /* iOS System Background */
+  background-image: radial-gradient(circle at 50% 50%, rgba(0, 122, 255, 0.05) 0%, transparent 50%);
   color: var(--color-text-main);
   min-height: 100vh;
-  overflow-x: hidden;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.4s ease;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 430px; /* iPhone 15 Pro Max width approximate */
+  height: 90vh;
+  max-height: 932px;
+  background-color: var(--color-bg-primary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
+  border-radius: 44px; /* iOS Device corner radius */
+  border: 8px solid #2c2c2e; /* Subtle device frame */
+  margin: 20px auto;
+  overflow: hidden;
+}
+
+/* For mobile devices, take full screen */
+@media (max-width: 450px) {
+  body {
+    align-items: flex-start;
+  }
+  .app-container {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+    margin: 0;
+  }
 }
 
 h1, h2, h3, h4 {

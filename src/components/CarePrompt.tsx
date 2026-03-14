@@ -13,6 +13,14 @@ const PROMPT_LIBRARY = [
   "☕ 现在的你，比任务更需要一次温暖的呼吸。"
 ];
 
+const REST_LIBRARY = [
+  "⚠️ 核心过热！能量已降至临界点，请强制休息。",
+  "🛑 警报：能量供应不足，继续工作可能导致系统崩溃。",
+  "💤 电池告急，请将自己接入‘睡眠插座’进行充电。",
+  "🥤 极低能量状态！比起清单，你现在更需要糖分和水分。",
+  "🌙 魔法干涸，强行施法是徒劳的，请立即进入休眠。"
+];
+
 interface CarePromptProps {
   taskCount: number;
   totalMinutes: number;
@@ -32,17 +40,21 @@ const CarePrompt: React.FC<CarePromptProps> = ({ taskCount, totalMinutes, recent
   const showPrompt = triggers.count || triggers.duration || triggers.intensity || triggers.lowBattery;
   
   const promptText = useMemo(() => {
+    if (triggers.lowBattery) {
+      const index = Math.floor(Math.random() * REST_LIBRARY.length);
+      return "[🔴 极低能量] " + REST_LIBRARY[index];
+    }
+    
     if (!showPrompt) return '"The flow of time begins with a single intention."';
     
     let prefix = "";
-    if (triggers.lowBattery) prefix = "[🔴 能量过低] ";
-    else if (triggers.intensity) prefix = "[⚡ 高频触发] ";
+    if (triggers.intensity) prefix = "[⚡ 高频触发] ";
     else if (triggers.duration) prefix = "[💎 深度专注] ";
     else if (triggers.count) prefix = "[🏆 成就达成] ";
     
     const index = Math.floor(Math.random() * PROMPT_LIBRARY.length);
     return prefix + PROMPT_LIBRARY[index];
-  }, [showPrompt, triggers.count, triggers.duration, triggers.intensity]);
+  }, [showPrompt, triggers.count, triggers.duration, triggers.intensity, triggers.lowBattery]);
 
   return (
     <footer className="footer-console glass-panel">
