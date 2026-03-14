@@ -60,7 +60,7 @@ const App: React.FC = () => {
         const stats = JSON.parse(savedStats);
         setTotalMinutesToday(stats.minutes || 0);
         setCompletedCountToday(stats.count || 0);
-        // 初始咖啡基于已完成任务
+        // Initial coffee based on completed tasks
         setCoffeeLevel(Math.min(100, (stats.count || 0) * 20));
       }
     }
@@ -68,7 +68,8 @@ const App: React.FC = () => {
     const savedTasks = localStorage.getItem('mana_tasks_v5');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
 
-    // 历史统计初始化移除
+    // Pre-load audio engine
+    soundUtils.init();
   }, []);
 
   // 持久化
@@ -130,7 +131,6 @@ const App: React.FC = () => {
       return nextCount;
     });
     
-    soundUtils.playComplete();
     const now = Date.now();
     let nextRecentCount = 0;
     setRecentCompletions(prev => {
@@ -265,9 +265,11 @@ const App: React.FC = () => {
                     autoFocus
                     type="text" 
                     placeholder={t('taskViewport.placeholder')}
+                    maxLength={50}
                     value={newTaskText}
                     onChange={(e) => setNewTaskText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                    style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}
                   />
                 </div>
 
@@ -330,6 +332,7 @@ const App: React.FC = () => {
               <Reorder.Item key={task.id} value={task}>
                 <TaskBubble 
                   {...task}
+                  currentLevel={coffeeLevel}
                   onComplete={handleComplete}
                   onDelete={handleDelete}
                 />

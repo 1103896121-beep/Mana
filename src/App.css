@@ -197,7 +197,7 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition-bounce);
-  box-shadow: 0 6px 15px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 6px 15px rgba(6, 182, 212, 0.3);
 }
 
 .add-task-btn.active {
@@ -427,6 +427,8 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.85rem;
   font-weight: 700;
+  min-width: 90px; /* 防止中英文切换时按钮尺寸大幅跳动 */
+  text-align: center;
   transition: all 0.2s ease;
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.2);
   outline: 1px solid transparent;
@@ -458,7 +460,7 @@
   background: var(--color-primary); 
   color: white;
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(46, 91, 255, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35), 0 0 0 0.5px rgba(255, 255, 255, 0.2);
 }
 
 .clear-expired-btn-mini {

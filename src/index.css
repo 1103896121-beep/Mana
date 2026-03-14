@@ -8,10 +8,16 @@
   --color-bg-primary: #0d0d0e;
   --color-bg-primary-rgb: 13, 13, 14;
   --color-bg-secondary: #141416;
-  --color-primary: #2e5bff; /* 升级为以太蓝 (Aether Blue)，更具科技感 */
-  --color-secondary: #5856d6;
-  --color-accent: #64d2ff;
+  --color-primary: #4F73B8; /* 经典高级蓝 (Premium Classic Blue) - 稳重、商务、深邃 */
+  --color-secondary: #3B5998;
+  --color-accent: #6D8DD1;
   --color-white: #ffffff;
+  
+  /* 金属感材质 (Metallic Texture) */
+  --metallic-bg: linear-gradient(135deg, #2D3A55 0%, #4F73B8 50%, #2D3A55 100%);
+  --metallic-border: 1px solid rgba(109, 141, 209, 0.4);
+  --metallic-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 10px 20px rgba(0, 0, 0, 0.4);
+  --metallic-glow: 0 0 15px rgba(79, 115, 184, 0.3);
   
   /* 能量看板专色: 纯净高亮 */
   --color-energy-label: rgba(255, 255, 255, 0.6);
@@ -60,7 +66,11 @@
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 
-  --mana-rgb: 0, 122, 255;
+  --color-primary: #1c1c1e; /* 浅色模式下主按钮为深石墨黑 */
+  --color-secondary: #636366;
+  --color-accent: #000000;
+
+  --mana-rgb: 44, 44, 46;
   --mana-intensity: 0.1;
 }
 

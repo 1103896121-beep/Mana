@@ -2,87 +2,183 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: 90px; 
-  height: 100px;
-  position: relative;
   justify-content: center;
-}
-
-.sleek-wireframe {
   position: relative;
-  width: 80px;
-  height: 90px;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+  width: 140px; 
+  height: 120px;
 }
 
-.cup-svg-vessel {
+/* 底部倒影/阴影组 */
+.cute-mug-shadow {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 20px;
+  z-index: 0;
+}
+
+/* 杯身阴影 */
+.shadow-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.4);
+  filter: blur(8px);
+  border-radius: 50%;
+  transform: scaleY(0.5);
+}
+
+[data-theme='light'] .shadow-body { background: rgba(0, 0, 0, 0.15); }
+
+/* 马克杯容器 */
+.cute-mug-wrapper {
+  position: relative;
+  width: 100px; 
+  height: 95px; 
+  z-index: 1;
+}
+
+
+
+/* 半透明磨砂玻璃主杯体 */
+.cute-mug-body {
+  position: relative;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 20px 20px 45px 45px; 
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-top-width: 5px; 
+  box-shadow: 
+    inset -10px -10px 25px rgba(0, 0, 0, 0.2), /* 深邃内部 */
+    inset 10px 10px 20px rgba(255, 255, 255, 0.15),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  overflow: hidden;
 }
 
-.liquid-svg-wrapper {
+[data-theme='light'] .cute-mug-body {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(200, 200, 200, 0.95);
+  box-shadow: 
+    inset -10px -10px 20px rgba(0, 0, 0, 0.08),
+    inset 10px 10px 20px rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05), /* 追加一层极细内边框增强轮廓 */
+    0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 高光增强器：左侧主高光 */
+.cute-highlight.left {
+  position: absolute;
+  top: 10px;
+  left: 6px;
+  width: 14px;
+  height: 50px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), transparent);
+  border-radius: 10px;
+  filter: blur(1.5px);
+  transform: rotate(-6deg);
+  z-index: 4;
+}
+
+/* 右侧柔和反光 */
+.cute-highlight.right {
+  position: absolute;
+  top: 15px;
+  right: 5px;
+  width: 8px;
+  height: 35px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 10px;
+  filter: blur(2px);
+  transform: rotate(6deg);
+  z-index: 4;
+}
+
+/* 底部圆润反光 */
+.cute-highlight.bottom {
+  position: absolute;
+  bottom: 8px;
+  left: 20px;
+  right: 20px;
+  height: 10px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  filter: blur(3px);
+  z-index: 4;
+}
+
+[data-theme='light'] .cute-highlight.left {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.3));
+}
+
+/* 把手在玻璃上的折射倒影已经移除（因为显得太脏） */
+.handle-glass-reflection {
+  display: none;
+}
+
+/* 内部液体组 */
+.cute-liquid-container {
   position: absolute;
   inset: 0;
-  clip-path: url(#cup-clip); 
+  border-radius: 17px 17px 42px 42px; 
+  overflow: hidden;
+  z-index: 3;
 }
 
-/* 核心设定：液面（波浪）的高度取决于 --coffee-percent。 */
-/* 我们使用相对整个裁切区域底部的百分比定位。 */
-
-.liquid-body {
+.cute-liquid-fill {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: var(--coffee-percent);
+  height: calc(var(--coffee-percent) * 0.88); /* Maximum 88% height to leave rim gap */
   background: linear-gradient(180deg, var(--coffee-light), var(--coffee-dark));
-  transition: height 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-origin: bottom;
-  z-index: 1;
+  transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0.85; /* 果冻清透感 */
 }
 
-.wave-layer {
+/* 液面顶部的高光层 */
+.liquid-surface-glow {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  bottom: calc(var(--coffee-percent) * 0.88 - 3px);
+  filter: blur(3px);
+  transition: bottom 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 3;
+}
+
+/* 双层波浪 */
+.cute-wave {
   position: absolute;
   left: -50%;
   width: 200%;
   height: 200%;
+  bottom: calc(var(--coffee-percent) * 0.88 - 180%); /* Adjusted base for waves */
+  transition: bottom 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 41% 43% 45% 42%;
+  animation: cute-spin 4s linear infinite;
   background: var(--coffee-light);
-  border-radius: 42% 44% 43% 41%; 
-  /* 波浪贴合液面顶部。当 percent=0 时，底边在 -200%（全埋在地下），顶边在 0%。 */
-  bottom: calc(var(--coffee-percent) - 200%);
-  transition: bottom 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background 1s ease;
-  animation: wave-spin 5s linear infinite;
-  opacity: 0.9;
-  z-index: 2;
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+.cute-wave.back {
+  background: var(--coffee-dark);
+  border-radius: 44% 41% 42% 45%;
+  animation: cute-spin 6s linear infinite reverse;
+  opacity: 0.6;
   mix-blend-mode: multiply;
 }
 
-.wave-layer.back {
-  background: var(--coffee-dark);
-  border-radius: 40% 41% 42% 43%;
-  opacity: 0.6;
-  animation: wave-spin 8s linear infinite reverse;
-  z-index: 1;
-  mix-blend-mode: normal;
-}
-
-@keyframes wave-spin {
+@keyframes cute-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-/* 发线主轮廓增加微微的霓虹光晕 */
-.main-outline {
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
-}
-
-/* 亮色模式支持，强化轮廓与暗色反光 */
-[data-theme='light'] .glow-stroke {
-  stroke: rgba(0, 0, 0, 0.5);
-}
-
-[data-theme='light'] .main-outline {
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
 }

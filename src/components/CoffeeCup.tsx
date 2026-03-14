@@ -6,14 +6,14 @@ interface CoffeeCupProps {
 }
 
 const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage }) => {
-  // 高级渐变色：底部的咖啡较深，顶部的咖啡略浅透光
-  const getCoffeeGradient = () => {
-    if (percentage > 80) return ['#2A1608', '#4A2810']; 
-    if (percentage > 40) return ['#3A2012', '#6F3E18']; 
-    return ['#4A2B11', '#8C5226']; 
+  // 醇厚温暖的咖啡/拿铁渐变
+  const getLiquidGradient = () => {
+    if (percentage > 80) return ['#A0522D', '#5C4033']; 
+    if (percentage > 40) return ['#CD853F', '#8B4513']; 
+    return ['#DEB887', '#A0522D']; 
   };
   
-  const [darkColor, lightColor] = getCoffeeGradient();
+  const [lightColor, darkColor] = getLiquidGradient();
 
   const cupStyle = {
     '--coffee-percent': `${percentage}%`,
@@ -23,57 +23,36 @@ const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage }) => {
 
   return (
     <div className="coffee-cup-container" style={cupStyle}>
-      <div className="cup-wrapper sleek-wireframe">
-        {/* Sleek Neon Wireframe SVG Cup */}
-        <svg viewBox="0 0 80 90" className="cup-svg-vessel">
-          <defs>
-            {/* 咖啡液体发光渐变 */}
-            <linearGradient id="coffee-grad" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="var(--coffee-dark)" />
-              <stop offset="100%" stopColor="var(--coffee-light)" />
-            </linearGradient>
+      {/* 底部投射阴影与把手的倒影在同一个层级 */}
+      <div className="cute-mug-shadow">
+        <div className="shadow-body"></div>
+        <div className="shadow-handle"></div>
+      </div>
 
-            {/* 线框发光渐变 */}
-            <linearGradient id="wireframe-glow" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(255, 255, 255, 0.9)" />
-              <stop offset="50%" stopColor="rgba(255, 255, 255, 0.4)" />
-              <stop offset="100%" stopColor="rgba(255, 255, 255, 0.1)" />
-            </linearGradient>
+      <div className="cute-mug-wrapper">
+        
+        {/* 已按用户要求移除把手，保留最纯净的玻璃形态 */}
 
-            <clipPath id="cup-clip">
-              <path d="M 12 5 L 48 5 L 44 72 C 43 78 39 82 30 82 C 21 82 17 78 16 72 Z" />
-            </clipPath>
-          </defs>
+        {/* 主杯体 (Chubby Main Body) */}
+        <div className="cute-mug-body">
+          {/* 液面与波浪 */}
+          <div className="cute-liquid-container">
+            <div className="cute-wave back"></div>
+            <div className="cute-wave front"></div>
+            <div className="cute-liquid-fill"></div>
+            
+            {/* 液面反光 */}
+            <div className="liquid-surface-glow"></div>
+          </div>
+
+          {/* 玻璃感反光与折射 */}
+          <div className="cute-highlight left"></div>
+          <div className="cute-highlight right"></div>
+          <div className="cute-highlight bottom"></div>
           
-          {/* 1. 杯子把手 - 纤细发光线 */}
-          <path 
-            d="M 48 24 C 75 24 75 58 45 58" 
-            fill="none" 
-            stroke="url(#wireframe-glow)" 
-            strokeWidth="3" 
-            strokeLinecap="round" 
-            className="cup-handle glow-stroke"
-          />
-
-          {/* 2. 内部波动咖啡流体 */}
-          <foreignObject x="0" y="0" width="80" height="90" clipPath="url(#cup-clip)">
-            <div className="liquid-svg-wrapper">
-              <div className="wave-layer back" />
-              <div className="wave-layer" />
-              <div className="liquid-body" />
-            </div>
-          </foreignObject>
-
-          {/* 3. 外层主线框 (Wireframe Body) */}
-          <path 
-            d="M 8 5 L 52 5 L 48 72 C 46 80 40 85 30 85 C 20 85 14 80 12 72 Z" 
-            fill="none" 
-            stroke="url(#wireframe-glow)" 
-            strokeWidth="2.5" 
-            strokeLinejoin="round" 
-            className="cup-body glow-stroke main-outline"
-          />
-        </svg>
+          {/* 增加把手在玻璃杯体上的折射倒影 */}
+          <div className="handle-glass-reflection"></div>
+        </div>
       </div>
     </div>
   );
