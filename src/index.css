@@ -8,14 +8,14 @@
   --color-bg-primary: #0d0d0e;
   --color-bg-primary-rgb: 13, 13, 14;
   --color-bg-secondary: #141416;
-  --color-primary: #007aff; 
+  --color-primary: #2e5bff; /* 升级为以太蓝 (Aether Blue)，更具科技感 */
   --color-secondary: #5856d6;
   --color-accent: #64d2ff;
   --color-white: #ffffff;
   
   /* 能量看板专色: 纯净高亮 */
   --color-energy-label: rgba(255, 255, 255, 0.6);
-  --color-energy-value: #ffffff; /* 锁定纯白，彻底消除灰色感 */
+  --color-energy-value: #ffffff; 
   --color-battery-healthy: #34c759;
   --color-battery-warning: #ffcc00;
   --color-battery-low: #ff3b30;

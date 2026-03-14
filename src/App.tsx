@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Plus, Moon, Sun, Trash2, Languages } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
-import CarePrompt from './components/CarePrompt';
-import Battery from './components/Battery';
+import CoffeeCup from './components/CoffeeCup';
 import { useTranslation } from './hooks/useTranslation';
 import { soundUtils } from './utils/soundUtils';
 import './App.css';
@@ -30,13 +29,12 @@ const App: React.FC = () => {
   const [newTaskDetail, setNewTaskDetail] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(30);
   
-  // 统计与电池
   const [totalMinutesToday, setTotalMinutesToday] = useState(0);
   const [completedCountToday, setCompletedCountToday] = useState(0);
-  const [batteryLevel, setBatteryLevel] = useState(100);
+  const [coffeeLevel, setCoffeeLevel] = useState(0);
   const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
-  
-  // 状态清理：移除统计 Modal 开关
+  const [coffeeAlert, setCoffeeAlert] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: 'single', id: string } | { type: 'expired' } | null>(null);
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -54,7 +52,7 @@ const App: React.FC = () => {
     if (lastActiveDate !== today) {
       setTotalMinutesToday(0);
       setCompletedCountToday(0);
-      setBatteryLevel(100);
+      setCoffeeLevel(0);
       localStorage.setItem('mana_last_active_date', today);
     } else {
       const savedStats = localStorage.getItem('mana_daily_stats_v4');
@@ -62,8 +60,8 @@ const App: React.FC = () => {
         const stats = JSON.parse(savedStats);
         setTotalMinutesToday(stats.minutes || 0);
         setCompletedCountToday(stats.count || 0);
-        // 初始电量基于已完成任务
-        setBatteryLevel(Math.max(0, 100 - (stats.count || 0) * 12));
+        // 初始咖啡基于已完成任务
+        setCoffeeLevel(Math.min(100, (stats.count || 0) * 20));
       }
     }
 
@@ -112,39 +110,75 @@ const App: React.FC = () => {
   };
 
   const clearExpiredTasks = () => {
-    if (!window.confirm(t('clearConfirm'))) return;
-    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    setTasks(prev => prev.filter(t => now - t.createdAt < SEVEN_DAYS_MS));
-    soundUtils.playDelete();
+    setConfirmAction({ type: 'expired' });
   };
 
   const handleComplete = (id: string, duration: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
+    
+    let nextMinutes = 0;
     setTotalMinutesToday(prev => {
-      const newMins = prev + duration;
-      const consumption = (duration / 300) * 100;
-      setBatteryLevel(prevBattery => Math.max(0, prevBattery - consumption));
-      return newMins;
+      nextMinutes = prev + duration;
+      return nextMinutes;
     });
-    setCompletedCountToday(prev => prev + 1);
+
+    setCoffeeLevel(prevLevel => Math.min(100, prevLevel + 20)); // 每个任务固定增加 20%
+    
+    let nextCount = 0;
+    setCompletedCountToday(prev => {
+      nextCount = prev + 1;
+      return nextCount;
+    });
     
     soundUtils.playComplete();
     const now = Date.now();
+    let nextRecentCount = 0;
     setRecentCompletions(prev => {
       const filtered = prev.filter(t => now - t < 30 * 60000);
-      return [...filtered, now];
+      const nextArr = [...filtered, now];
+      nextRecentCount = nextArr.length;
+      return nextArr;
     });
+
+    // 等待气泡化作咖啡飞入杯中的动画时间后，检测是否需要弹窗关怀
+    setTimeout(() => {
+      if (nextCount === 5 || nextMinutes >= 180) {
+        setCoffeeAlert(t('carePrompt.overwork'));
+      } else if (nextRecentCount >= 3 && nextRecentCount % 3 === 0) {
+        setCoffeeAlert(t('carePrompt.coffeeBreak'));
+      }
+    }, 1500);
+  };
+
+  const injectTestData = () => {
+    const now = Date.now();
+    const mockTasks: Task[] = [
+      { id: crypto.randomUUID(), text: 'Meditate (Mock)', detail: 'Morning focus', duration: 15, createdAt: now - 3600000 },
+      { id: crypto.randomUUID(), text: 'Deep Work (Mock)', detail: 'Coding Mana', duration: 90, createdAt: now - 86400000 },
+      { id: crypto.randomUUID(), text: 'Read Book (Old)', detail: 'Clear expired test', duration: 30, createdAt: now - 8 * 86400000 }, // 8 days ago
+    ];
+    const combinedTasks = [...mockTasks, ...tasks];
+    setTasks(combinedTasks);
   };
 
   const handleDelete = (id: string) => {
-    // 强制确认逻辑
-    if (window.confirm(t('deleteConfirm'))) {
-      setTasks(prev => prev.filter(t => t.id !== id));
-      soundUtils.playDelete();
-    }
+    setConfirmAction({ type: 'single', id });
   };
 
+  const confirmDelete = () => {
+    if (!confirmAction) return;
+    
+    if (confirmAction.type === 'single') {
+      setTasks(prev => prev.filter(t => t.id !== confirmAction.id));
+    } else if (confirmAction.type === 'expired') {
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      setTasks(prev => prev.filter(t => now - t.createdAt < SEVEN_DAYS_MS));
+    }
+    
+    soundUtils.playDelete();
+    setConfirmAction(null);
+  };
 
   const displayTasks = useMemo(() => {
     if (sortField === 'manual') return tasks;
@@ -165,8 +199,8 @@ const App: React.FC = () => {
   };
 
   const appStyle = {
-    '--mana-rgb': batteryLevel > 60 ? '0, 122, 255' : batteryLevel > 20 ? '255, 204, 0' : '255, 59, 48',
-    '--mana-intensity': (batteryLevel / 100) * 0.15
+    '--mana-rgb': '210, 105, 30', // Coffee color base
+    '--mana-intensity': (coffeeLevel / 100) * 0.15
   } as React.CSSProperties;
 
   return (
@@ -174,13 +208,21 @@ const App: React.FC = () => {
       <header className="mana-header apple-header">
         <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
           <div className="mana-header-main">
-            {/* 极简第二行：今日能量 & 垂直电池 - 高亮大字 */}
-            <div className="mana-energy-status">
-              <span className="mana-label-highlight">{t('header.todayEnergy')}</span>
-              <Battery percentage={batteryLevel} />
+            {/* 极简第二行：垂直咖啡杯 */}
+            <div className="mana-energy-vessel">
+              <CoffeeCup percentage={coffeeLevel} />
             </div>
           </div>
           <div className="header-actions-group">
+            {/* DEV: Inject Data Button */}
+            <button 
+              className="action-icon-btn utility-btn dev-inject-btn"
+              onClick={injectTestData}
+              title="Inject Test Data (Dev Only)"
+              style={{ padding: '0 8px', width: 'auto', fontSize: '10px' }}
+            >
+              Inject
+            </button>
             <button className="language-toggle action-icon-btn utility-btn" onClick={toggleLanguage}>
               <Languages size={20} />
             </button>
@@ -303,13 +345,76 @@ const App: React.FC = () => {
         </Reorder.Group>
       </main>
 
-      <CarePrompt 
-        taskCount={completedCountToday} 
-        totalMinutes={totalMinutesToday}
-        recentCount={recentCompletions.length}
-        batteryLevel={batteryLevel}
-      />
+      <AnimatePresence>
+        {coffeeAlert && (
+          <motion.div 
+            className="panel-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setCoffeeAlert(null)}
+            style={{ zIndex: 4000 }}
+          >
+            <motion.div 
+              className="confirm-modal glass-panel"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3>{language === 'en' ? 'Time for a Break' : '休息时刻'}</h3>
+              <p style={{ marginTop: '8px', marginBottom: '16px', fontSize: '0.95rem' }}>{coffeeAlert}</p>
+              <div className="confirm-actions">
+                <button className="confirm-delete-btn" style={{ background: 'rgba(210, 105, 30, 0.15)', color: '#D2691E', border: '1px solid rgba(210, 105, 30, 0.3)' }} onClick={() => setCoffeeAlert(null)}>
+                  {language === 'en' ? 'Okay' : '好的'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
+      <AnimatePresence>
+        {confirmAction && (
+          <motion.div 
+            className="panel-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setConfirmAction(null)}
+            style={{ zIndex: 3000 }}
+          >
+            <motion.div 
+              className="confirm-modal glass-panel"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3>
+                {confirmAction.type === 'single' 
+                  ? (language === 'en' ? 'Confirm Deletion' : '确认删除')
+                  : (language === 'en' ? 'Clear Expired' : '清理过期任务')}
+              </h3>
+              <p>
+                {confirmAction.type === 'single' 
+                  ? t('deleteConfirm')
+                  : t('clearConfirm')}
+              </p>
+              <div className="confirm-actions">
+                <button className="cancel-btn" onClick={() => setConfirmAction(null)}>
+                  {language === 'en' ? 'Cancel' : '取消'}
+                </button>
+                <button className="confirm-delete-btn" onClick={confirmDelete}>
+                  {confirmAction.type === 'single' 
+                    ? (language === 'en' ? 'Dissolve' : '溶解')
+                    : (language === 'en' ? 'Clear' : '清理')}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

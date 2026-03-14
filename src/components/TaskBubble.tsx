@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Trash2, Clock, Calendar, Info, X } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Check, Info, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { soundUtils } from '../utils/soundUtils';
 import './TaskBubble.css';
 
 interface TaskBubbleProps {
@@ -18,57 +19,55 @@ interface TaskBubbleProps {
 const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, detail, onComplete, onDelete }) => {
   const { t } = useTranslation();
   const [isExploding, setIsExploding] = useState(false);
+  const [flyingDrop, setFlyingDrop] = useState<{ startX: number, startY: number, endX: number, endY: number, pourY: number } | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const formattedDate = new Date(createdAt).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).replace(/\//g, '-');
+  const dateObj = new Date(createdAt);
+  const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
 
   const handleComplete = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止 Reorder 拖拽激活
+    if (isExploding) return;
     setIsExploding(true);
     
-    // 强化版爆炸动效粒子 - 限制在当前元素或手机容器内
-    const end = Date.now() + 1000;
-    const colors = ['#007aff', '#EBEBF5', '#64d2ff'];
+    // 计算气泡缩成咖啡滴飞向右上角杯子的轨道
+    const btnRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const cupEl = document.querySelector('.mana-energy-vessel');
+    // Fallback 坐标
+    let cupRect = { left: window.innerWidth - 60, top: 40, width: 40, height: 70 }; 
+    if (cupEl) {
+      cupRect = cupEl.getBoundingClientRect();
+    }
 
-    // 获取手机容器引用
-    const container = document.querySelector('.phone-container');
-    
-    (function frame() {
-      if (!container) return;
-      
-      confetti({
-        particleCount: 2,
-        angle: 60,
-        spread: 45,
-        origin: { x: 0.2, y: 0.7 },
-        colors: colors,
-        container: container as HTMLElement
-      });
-      confetti({
-        particleCount: 2,
-        angle: 120,
-        spread: 45,
-        origin: { x: 0.8, y: 0.7 },
-        colors: colors,
-        container: container as HTMLElement
-      });
+    const startX = btnRect.left + btnRect.width / 2 - 12;
+    const startY = btnRect.top + btnRect.height / 2 - 12;
+    // 杯口正上方中心
+    const cupTopX = cupRect.left + cupRect.width / 2 - 12;
+    const cupTopY = cupRect.top - 20; 
+    // 杯底（注入点）
+    const cupBottomY = cupRect.top + cupRect.height - 30;
 
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    }());
+    setFlyingDrop({
+      startX,
+      startY,
+      endX: cupTopX,
+      endY: cupTopY,
+      pourY: cupBottomY
+    });
 
-    setTimeout(() => onComplete(id, duration), 1200);
+    // 第一阶段(飞向杯口)大约耗时 0.6s。
+    // 我们在 0.6s 时精准播放倒水的物理声音，配合水滴被拉长注入的视觉。
+    setTimeout(() => {
+      soundUtils.playComplete();
+    }, 600);
+
+    // 完整的飞起+注入动画大约 1.2 秒。我们在 0.9 秒时通知 App.tsx 增加液面。
+    setTimeout(() => onComplete(id, duration), 900);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // 关键：阻止 Reorder 拖拽劫持点击
+    e.preventDefault();
+    e.stopPropagation();
     onDelete(id);
   };
 
@@ -78,12 +77,10 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
         layout
         className={`task-bubble-item ${isExploding ? 'exploding' : ''}`}
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        animate={{ opacity: isExploding ? 0 : 1, scale: isExploding ? 0 : 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
       >
-        {/* 移除拖拽手柄图标 */}
-
         <div className="task-content" onClick={() => setShowDetailModal(true)}>
           <div className="task-header-row">
             <h3 className="task-title-text">{text}</h3>
@@ -91,12 +88,10 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
           </div>
           <div className="task-meta">
             <div className="meta-item">
-              <Calendar size={12} />
               <span>{formattedDate}</span>
             </div>
             <div className="meta-item">
-              <Clock size={12} />
-              <span>{duration} mins</span>
+              <span>{duration}m</span>
             </div>
           </div>
         </div>
@@ -110,6 +105,57 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
           </button>
         </div>
       </motion.div>
+
+      {/* 咖啡变成水流倾倒入杯中动效 (Morphing Pour Animation) */}
+      {flyingDrop && createPortal(
+        <motion.div
+          className="coffee-drop-container"
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            width: '24px',
+            height: '24px',
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}
+          initial={{ 
+            x: flyingDrop.startX, 
+            y: flyingDrop.startY,
+            scaleX: 1,
+            scaleY: 1,
+            opacity: 1 
+          }}
+          animate={{ 
+            // 阶段1：飞往杯口正上方；阶段2：停留在 X 轴，向下扎入杯中
+            x: [flyingDrop.startX, flyingDrop.endX, flyingDrop.endX],
+            // 阶段1：抛物线向上飞；阶段2：加速跌落入杯体
+            y: [flyingDrop.startY, flyingDrop.endY, flyingDrop.pourY],
+            // 阶段1：略微收缩宽度；阶段2：进一步变细成水流
+            scaleX: [1, 0.7, 0.3],
+            // 阶段1：随着重力拉长水滴；阶段2：极度拉伸成完整的涓流线
+            scaleY: [1, 1.8, 5],
+            // 最后阶段潜入咖啡海中消失
+            opacity: [0, 1, 1, 0]
+          }}
+          transition={{ 
+            duration: 1.2, 
+            times: [0, 0.5, 1], // 第一阶段0.6s，第二阶段0.6s
+            ease: ["easeOut", "easeIn"] // 飞起抛物减速，落下加速
+          }}
+        >
+          <motion.div
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '24px',
+              backgroundColor: '#4A2810', // 浓咖啡色
+              boxShadow: '0 4px 15px rgba(74, 40, 16, 0.6)'
+            }}
+          />
+        </motion.div>,
+        document.body
+      )}
 
       {/* 详情弹窗 */}
       <AnimatePresence>
@@ -134,7 +180,7 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
               </div>
               <div className="detail-body">
                 <section>
-                  <label>{t('controls.time')}</label>
+                  <label>{t('taskViewport.taskName')}</label>
                   <p className="full-title">{text}</p>
                 </section>
                 <section>
@@ -143,11 +189,11 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
                 </section>
                 <section className="detail-stats">
                   <div className="stat-vessel">
-                    <label><Clock size={14} />{t('taskViewport.focusTime')}</label>
-                    <p>{duration} mins</p>
+                    <label>{t('taskViewport.focusTime')}</label>
+                    <p>{duration}m</p>
                   </div>
                   <div className="stat-vessel">
-                    <label><Calendar size={14} />{t('controls.time')}</label>
+                    <label>{t('controls.time')}</label>
                     <p>{formattedDate}</p>
                   </div>
                 </section>

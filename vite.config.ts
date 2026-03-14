@@ -9,3 +9,5 @@ export default defineConfig({
     port: 5173
   }
 })
+
+// Vite HMR trigger

@@ -1,0 +1,88 @@
+.coffee-cup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 90px; 
+  height: 100px;
+  position: relative;
+  justify-content: center;
+}
+
+.sleek-wireframe {
+  position: relative;
+  width: 80px;
+  height: 90px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+}
+
+.cup-svg-vessel {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.liquid-svg-wrapper {
+  position: absolute;
+  inset: 0;
+  clip-path: url(#cup-clip); 
+}
+
+/* 核心设定：液面（波浪）的高度取决于 --coffee-percent。 */
+/* 我们使用相对整个裁切区域底部的百分比定位。 */
+
+.liquid-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--coffee-percent);
+  background: linear-gradient(180deg, var(--coffee-light), var(--coffee-dark));
+  transition: height 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: bottom;
+  z-index: 1;
+}
+
+.wave-layer {
+  position: absolute;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: var(--coffee-light);
+  border-radius: 42% 44% 43% 41%; 
+  /* 波浪贴合液面顶部。当 percent=0 时，底边在 -200%（全埋在地下），顶边在 0%。 */
+  bottom: calc(var(--coffee-percent) - 200%);
+  transition: bottom 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background 1s ease;
+  animation: wave-spin 5s linear infinite;
+  opacity: 0.9;
+  z-index: 2;
+  mix-blend-mode: multiply;
+}
+
+.wave-layer.back {
+  background: var(--coffee-dark);
+  border-radius: 40% 41% 42% 43%;
+  opacity: 0.6;
+  animation: wave-spin 8s linear infinite reverse;
+  z-index: 1;
+  mix-blend-mode: normal;
+}
+
+@keyframes wave-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 发线主轮廓增加微微的霓虹光晕 */
+.main-outline {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
+/* 亮色模式支持，强化轮廓与暗色反光 */
+[data-theme='light'] .glow-stroke {
+  stroke: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='light'] .main-outline {
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
+}

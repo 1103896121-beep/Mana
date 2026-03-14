@@ -8,10 +8,11 @@ export const translations = {
     },
     taskViewport: {
       title: "Todo",
+      taskName: "TASK",
       placeholder: "Task name...",
       detailed: "Detail",
       detailPlaceholder: "Enter details (max 300 words)...",
-      focusTime: "Focus Time",
+      focusTime: "Estimated Duration",
       establishBtn: "Submit",
       emptyState: "No active tasks. Add one above.",
     },
@@ -27,6 +28,8 @@ export const translations = {
       deepFocus: "[💎 Deep Focus] ",
       achievement: "[🏆 Achievement] ",
       lowEnergy: "[🔴 Low Energy] ",
+      coffeeBreak: "You've finished 3 tasks quickly. Stop and take a rest, have a cup of coffee. ☕",
+      overwork: "You've worked too hard today. Please avoid over-exertion, balance work and rest, and relax. 🛑",
     },
     battery: {
       healthy: "Healthy",
@@ -49,10 +52,11 @@ export const translations = {
     },
     taskViewport: {
       title: "待办",
+      taskName: "任务名称",
       placeholder: "设定你的任务...",
       detailed: "详细",
       detailPlaceholder: "详细 (最多300字)...",
-      focusTime: "专注时长",
+      focusTime: "预计时长",
       establishBtn: "提交",
       emptyState: "暂无活跃任务。在上方添加一个吧。",
     },
@@ -68,6 +72,8 @@ export const translations = {
       deepFocus: "[💎 深度专注] ",
       achievement: "[🏆 成就达成] ",
       lowEnergy: "[🔴 极低能量] ",
+      coffeeBreak: "你在短时间内连续完成了 3 件事，停下来喝杯咖啡，稍微休息一下吧。☕",
+      overwork: "你今天已经非常努力了，请注意劳逸结合，放下手头的事情放松一下吧。🛑",
     },
     battery: {
       healthy: "良好",
