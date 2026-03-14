@@ -31,11 +31,9 @@ const App: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>('manual');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  // 初始化
+  // 初始化与重置逻辑
   useEffect(() => {
-    const savedTasks = localStorage.getItem('mana_tasks_v3');
-    if (savedTasks) setTasks(JSON.parse(savedTasks));
-    
+    // 基础设置加载
     const savedTheme = localStorage.getItem('mana_theme');
     if (savedTheme) {
       setTheme(savedTheme as 'dark' | 'light');
@@ -45,19 +43,33 @@ const App: React.FC = () => {
       document.body.dataset.theme = 'light';
     }
 
-    const savedStats = localStorage.getItem('mana_daily_stats_v2');
-    if (savedStats) {
-      const stats = JSON.parse(savedStats);
-      setTotalMinutesToday(stats.minutes || 0);
-      setCompletedCountToday(stats.count || 0);
+    // 检查日期重置
+    const today = new Date().toDateString();
+    const lastActiveDate = localStorage.getItem('mana_last_active_date');
+    
+    if (lastActiveDate !== today) {
+      // 跨天，重置统计数据
+      setTotalMinutesToday(0);
+      setCompletedCountToday(0);
+      localStorage.setItem('mana_last_active_date', today);
+    } else {
+      const savedStats = localStorage.getItem('mana_daily_stats_v3');
+      if (savedStats) {
+        const stats = JSON.parse(savedStats);
+        setTotalMinutesToday(stats.minutes || 0);
+        setCompletedCountToday(stats.count || 0);
+      }
     }
+
+    const savedTasks = localStorage.getItem('mana_tasks_v4');
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
   }, []);
 
   // 持久化
   useEffect(() => {
-    localStorage.setItem('mana_tasks_v3', JSON.stringify(tasks));
+    localStorage.setItem('mana_tasks_v4', JSON.stringify(tasks));
     localStorage.setItem('mana_theme', theme);
-    localStorage.setItem('mana_daily_stats_v2', JSON.stringify({
+    localStorage.setItem('mana_daily_stats_v3', JSON.stringify({
       minutes: totalMinutesToday,
       count: completedCountToday
     }));
@@ -80,11 +92,12 @@ const App: React.FC = () => {
     setTasks([newTask, ...tasks]);
     setNewTaskText('');
     setShowInput(false);
-    // 添加新任务时保持手动排序模式
     setSortField('manual');
   };
 
   const clearExpiredTasks = () => {
+    if (!window.confirm("Are you sure you want to clear all unfinished tasks from 7 days ago?")) return;
+    
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
     const beforeCount = tasks.length;
@@ -92,9 +105,9 @@ const App: React.FC = () => {
     
     if (filteredTasks.length < beforeCount) {
       setTasks(filteredTasks);
-      alert(`已清除 ${beforeCount - filteredTasks.length} 个 7 天前的任务。`);
+      alert(`Successfully cleared ${beforeCount - filteredTasks.length} tasks.`);
     } else {
-      alert("没有超过 7 天的未完成任务。");
+      alert("No tasks over 7 days found.");
     }
   };
 
@@ -111,7 +124,9 @@ const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
+    if (window.confirm("Confirm deletion? This will dissolve the intention bubble.")) {
+      setTasks(prev => prev.filter(t => t.id !== id));
+    }
   };
 
   // 排序处理
@@ -133,7 +148,6 @@ const App: React.FC = () => {
     }
   };
 
-  // 修复拖拽重排逻辑: 当在非手动排序模式下拖拽时，应先切换到手动模式或同步顺序
   const handleReorder = (newOrder: Task[]) => {
     setTasks(newOrder);
     if (sortField !== 'manual') {
@@ -160,6 +174,7 @@ const App: React.FC = () => {
             className="mana-progress-bar" 
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(100, (totalMinutesToday / 300) * 100)}%` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
           />
         </div>
       </header>
@@ -177,7 +192,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* 控制栏: 排序 + 清除功能并排 */}
         <div className="controls-bar">
           <div className="sorting-controls">
             <button 

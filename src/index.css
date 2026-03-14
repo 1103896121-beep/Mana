@@ -4,28 +4,31 @@
   /* iOS-inspired base scale */
   font-size: 18px; 
 
-  /* iOS Dark Mode Palette (Optimized for Readability) */
+  /* iOS Dark Mode Palette (Premium Contrast) */
   --color-bg-primary: #000000;
-  --color-bg-secondary: #0a0a0c; /* Deep black-blue for contrast */
+  --color-bg-secondary: #0c0c0e; 
   --color-primary: #007aff; 
   --color-secondary: #5856d6;
   --color-accent: #64d2ff;
   --color-white: #ffffff;
   
-  /* 精调暗色文字颜色: 主标题纯白，副标题高亮 */
-  --color-text-main: #ffffff;
-  --color-text-header: #ffffff; /* 确保标题绝对清晰 */
-  --color-text-muted: #98989d; /* iOS gray for secondary info */
+  /* 能量看板专属颜色: 亮青色或亮蓝色，确保绝对醒目 */
+  --color-energy-label: #a2a2a7; /* 辅助文字略暗一些以突出数字 */
+  --color-energy-value: #64d2ff; /* 亮天蓝色 */
   
-  /* 暗色模式下卡片背景需更深一些，且边框稍微亮起以区分 */
-  --glass-bg: rgba(30, 30, 32, 0.85); 
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-blur: blur(30px);
+  --color-text-main: #ffffff;
+  --color-text-header: #ffffff; 
+  --color-text-muted: #8e8e93;
+  
+  /* 深色模式下的气泡: 移除白色感，使用深邃半透明 */
+  --glass-bg: rgba(28, 28, 30, 0.7); 
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  --glass-blur: blur(25px);
 
   /* Aura & Glow Effects */
   --aura-mana-low: 0 0 15px rgba(255, 59, 48, 0.2);
-  --aura-mana-high: 0 0 30px rgba(0, 122, 255, 0.4);
+  --aura-mana-high: 0 0 35px rgba(0, 122, 255, 0.45);
   
   /* Spacing & Sizing */
   --spacing-xs: 8px;
@@ -34,7 +37,7 @@
   --spacing-lg: 32px;
   --spacing-xl: 48px;
   --radius-bubble: 28px;
-  --radius-card: 20px;
+  --radius-card: 22px;
   
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   --transition-bounce: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -43,12 +46,14 @@
 [data-theme='light'] {
   --color-bg-primary: #f2f2f7;
   --color-bg-secondary: #ffffff;
+  --color-energy-label: #8e8e93;
+  --color-energy-value: #007aff;
   --color-text-main: #000000;
   --color-text-header: #000000;
   --color-text-muted: #8e8e93;
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   --aura-mana-high: 0 10px 25px rgba(0, 122, 255, 0.2);
 }
 
@@ -65,16 +70,14 @@ body {
   color: var(--color-text-main);
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 h1, h2, h3, h4, .mana-font {
   font-family: 'Outfit', -apple-system, system-ui, sans-serif;
-  letter-spacing: -0.01em;
-  font-weight: 600;
-  color: var(--color-text-header);
+  letter-spacing: -0.015em;
+  font-weight: 700;
 }
 
 .app-container {
@@ -98,11 +101,11 @@ h1, h2, h3, h4, .mana-font {
 }
 
 @keyframes aura-pulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.03); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 0.6; }
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.02); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 0.5; }
 }
 
 .aura-float {
-  animation: aura-pulse 3s infinite ease-in-out;
+  animation: aura-pulse 4s infinite ease-in-out;
 }
