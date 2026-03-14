@@ -23,15 +23,15 @@ def create_doc():
     # 3. 核心功能需求
     doc.add_heading('3. 核心功能需求', level=1)
     
-    doc.add_heading('3.1 能量驱动的任务系统', level=2)
-    doc.add_paragraph('• Mana值分配：每个任务需绑定特定的能量消耗权重。')
-    doc.add_paragraph('• 可视化消耗：随着任务进度，总 Mana 池呈现动态流转效果。')
-    doc.add_paragraph('• 爆炸反馈：任务完成时，原本包裹任务的气泡将触发“爆炸”扩散粒子动效，象征能量的释放。')
+    doc.add_heading('3.1 时间驱动的任务系统', level=2)
+    doc.add_paragraph('• 任务时长分配：将原有的能量值概念转化为实用的“所需时间（分钟）”，支持 1-300 分钟设定。')
+    doc.add_paragraph('• 可视化进度：界面直观呈现每日积累的产出时间对比，增强掌控感。')
+    doc.add_paragraph('• 膨胀与爆炸反馈：任务完成时触发 2-3s 的气泡膨胀动效，模拟压力积聚后释放的物理质感，随后触发粒子爆炸销毁。')
     
-    doc.add_heading('3.2 任务列表 (Bubble-Style List) 交互系统', level=2)
-    doc.add_paragraph('• 排序与优先级：默认按创建时间排序；用户可在创建时设置优先级，或通过在列表中自由拖拽任务项来实时调整优先级。')
-    doc.add_paragraph('• 气泡列表：任务以列表形式呈现确保直观，但单个任务项采用气泡视觉包裹。')
-    doc.add_paragraph('• 物理交互：列表项在滑动时具有软粘性质感，模拟物理反馈。')
+    doc.add_heading('3.2 任务列表与排序系统', level=2)
+    doc.add_paragraph('• 多维排序：支持按创建时间、所需时长进行升序/降序排列。')
+    doc.add_paragraph('• 气泡列表：任务项采用圆润透明的气泡包裹，列表项显示创建的具体时间点。')
+    doc.add_paragraph('• 比例优化：针对 iOS 用户调大全局字体与交互组件比例，确保单手操作的准确性。')
     
     doc.add_heading('3.3 动态能量流转与智能关怀提示', level=2)
     doc.add_paragraph('• 能量滑动条：用户可通过滑动条实时感知任务对总能量平衡的影响。')
@@ -41,11 +41,11 @@ def create_doc():
     doc.add_heading('3.4 艺术化产出分享', level=2)
     doc.add_paragraph('• 定制卡片：将一天的生产力数据转化为极致简约的视觉卡片，便于社交分享。')
 
-    # 4. 视觉语言规范 (Visual Language)
-    doc.add_heading('4. 视觉语言规范', level=1)
-    doc.add_paragraph('• 关键词：灵动、空灵、通透、秩序、魔法。')
-    doc.add_paragraph('• 色彩方案：深层蓝 (Deep Blue)、神秘靛 (Indigo)、优雅紫 (Purple)、纯净白 (Clear White)。')
-    doc.add_paragraph('• 设计元素：玻璃态 (Glassmorphism)、光晕 (Aura)、微动效 (Micro-animations)。')
+    # 4. 视觉语言与多主题
+    doc.add_heading('4. 视觉语言与多主题支持', level=1)
+    doc.add_paragraph('• 关键词：灵动、空灵、平衡、双相。')
+    doc.add_paragraph('• 双色模式：支持亮色 (Light) 与暗色 (Dark) 两套视觉系统，满足全天候使用场景。')
+    doc.add_paragraph('• 设计元素：玻璃态 (Glassmorphism)、微动效 (Micro-animations)、大气泡感。')
 
     # 5. 技术架构与交互要求
     doc.add_heading('5. 技术架构与交互要求', level=1)
