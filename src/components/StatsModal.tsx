@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, BarChart2 } from 'lucide-react';
+import { X, BarChart2 } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 import './StatsModal.css';
 
 interface DailyLog {
@@ -17,6 +18,7 @@ interface StatsModalProps {
 }
 
 const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, totalMinutesEver }) => {
+  const { t } = useTranslation();
   const maxMins = Math.max(...history.map(h => h.minutes), 60);
 
   return (
@@ -37,7 +39,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
             onClick={e => e.stopPropagation()}
           >
             <div className="stats-header">
-              <h2>Analytics</h2>
+              <h2>{t('stats.title')}</h2>
               <button className="close-stats-btn" onClick={onClose}>
                 <X size={20} />
               </button>
@@ -45,21 +47,21 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
 
             <div className="stats-summary-grid">
               <div className="summary-card">
-                <span className="summary-label">Total Energy</span>
+                <span className="summary-label">{t('stats.totalEver')}</span>
                 <div className="summary-value">
-                  {totalMinutesEver}<span className="summary-unit">mins</span>
+                  {totalMinutesEver}<span className="summary-unit">{t('header.mins')}</span>
                 </div>
               </div>
               <div className="summary-card">
-                <span className="summary-label">7-Day Avg</span>
+                <span className="summary-label">{t('stats.avg7Days')}</span>
                 <div className="summary-value">
-                  {Math.round(history.reduce((a, b) => a + b.minutes, 0) / 7)}<span className="summary-unit">mins</span>
+                  {Math.round(history.reduce((a, b) => a + b.minutes, 0) / 7)}<span className="summary-unit">{t('header.mins')}</span>
                 </div>
               </div>
             </div>
 
             <div className="chart-section">
-              <h3><BarChart2 size={16} /> Last 7 Days</h3>
+              <h3><BarChart2 size={16} /> {t('stats.last7Days')}</h3>
               <div className="bar-chart">
                 {history.map((day, i) => (
                   <div key={day.date} className="bar-container" style={{ position: 'relative' }}>
@@ -78,13 +80,10 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
               </div>
             </div>
 
-            <div className="stats-insight summary-card">
-              <TrendingUp size={24} color="var(--color-primary)" />
-              <p style={{ fontSize: '0.9rem', lineHeight: '1.4', marginTop: '8px' }}>
-                {history[history.length-1].minutes > history[history.length-2]?.minutes 
-                  ? "Your energy output is trending upwards today. Maintain the flow." 
-                  : "Consider a lighter load today to preserve your long-term energy reserve."}
-              </p>
+            <div className="stats-header" style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
+               <button className="confirm-add-btn" onClick={onClose} style={{ width: '100%' }}>
+                  {t('stats.close')}
+               </button>
             </div>
           </motion.div>
         </motion.div>
@@ -94,3 +93,4 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
 };
 
 export default StatsModal;
+

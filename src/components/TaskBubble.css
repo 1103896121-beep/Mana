@@ -1,13 +1,22 @@
 .task-bubble-item {
   display: flex;
   align-items: center;
-  padding: 18px 20px;
-  margin-bottom: var(--spacing-md);
-  border-radius: var(--radius-bubble);
-  gap: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.04); /* 极淡背景，确保与body融合 */
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: var(--transition-smooth);
+  padding: 14px 16px; /* 稍微缩减内边距，给文字腾空间 */
+  background: rgba(20, 20, 22, 0.8); /* 背景稍微调深一点 */
+  border-radius: 20px;
+  border: 1.5px solid #FFFFFF; /* 边框稍微细一点，减少毛边感 */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.3); /* 双层阴影消除毛边 */
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+[data-theme='light'] .task-bubble-item {
+  background: #FFFFFF;
+  border-color: #007aff;
+  box-shadow: 0 8px 30px rgba(0, 122, 255, 0.15);
 }
 
 .task-bubble-item:active {
@@ -24,9 +33,12 @@
 .task-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   cursor: pointer;
+  min-width: 0; /* 允许内部元素收缩 */
+  overflow: hidden;
 }
 
 .task-header-row {
@@ -36,13 +48,19 @@
 }
 
 .task-title-text {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--color-text-main);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFFFFF;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  flex: 1;
+  min-width: 0;
+  padding-right: 4px; /* 防止字母被切断 */
+}
+
+[data-theme='light'] .task-title-text {
+  color: #111111;
 }
 
 .detail-indicator {
@@ -52,10 +70,16 @@
 
 .task-meta {
   display: flex;
-  gap: 16px;
-  color: var(--color-text-muted);
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.9); /* 高对比度白 */
   font-size: 0.8rem;
   font-weight: 500;
+  white-space: nowrap; /* 强制不换行 */
+}
+
+[data-theme='light'] .task-meta {
+  color: #444444;
 }
 
 .meta-item {
@@ -67,18 +91,28 @@
 .bubble-actions {
   display: flex;
   gap: 10px;
+  flex-shrink: 0; /* 绝对不能缩小 */
 }
 
 .action-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  border: none;
+  width: 40px; /* 稍微缩小一点按钮，节省空间 */
+  height: 40px;
+  border-radius: 20px;
+  border: 1.5px solid #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-bounce);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  flex-shrink: 0; /* 绝对不能被压缩 */
+}
+
+[data-theme='light'] .action-btn {
+  border-color: #007aff;
+  background: #f8f8f8;
+  color: #007aff;
 }
 
 .complete-btn {
@@ -109,13 +143,15 @@
 
 .detail-modal {
   width: 100%;
-  max-width: 450px;
-  padding: 32px;
+  max-width: 480px;
+  padding: 36px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
+  border-radius: 36px;
+  background: rgba(20, 20, 22, 0.85);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(255, 255, 255, 0.03);
 }
 
 .detail-header {
@@ -125,7 +161,10 @@
 }
 
 .detail-header h2 {
-  font-size: 1.4rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--color-primary);
 }
 
@@ -170,11 +209,30 @@
 .detail-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding-top: 16px;
-  border-top: 1px solid var(--glass-border);
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
 }
 
-.detail-stats p {
+.stat-vessel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-vessel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.stat-vessel p {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-white);
 }
@@ -189,4 +247,16 @@
 .task-bubble-item.exploding {
   animation: bubble-swell 0.8s forwards ease-in;
   pointer-events: none;
+  z-index: 1000; /* 确保爆炸效果在顶层 */
+}
+
+/* 强制 Confetti 容器限制在手机屏幕内 */
+canvas#confetti-canvas {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  left: 0 !important;
+  pointer-events: none;
+  z-index: 2000;
 }

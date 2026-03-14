@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Plus, Moon, Sun, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Moon, Sun, Trash2, Languages } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CarePrompt from './components/CarePrompt';
 import Battery from './components/Battery';
-import StatsModal from './components/StatsModal';
-import { BarChart3 } from 'lucide-react';
+import { useTranslation } from './hooks/useTranslation';
+import { soundUtils } from './utils/soundUtils';
 import './App.css';
 
-interface DailyLog {
-  date: string;
-  minutes: number;
-  count: number;
-}
+// 移除 DailyLog 接口
 
 interface Task {
   id: string;
@@ -26,10 +22,10 @@ type SortField = 'createdAt' | 'duration' | 'manual';
 type SortOrder = 'asc' | 'desc';
 
 const App: React.FC = () => {
+  const { t, language, setLanguage } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showInput, setShowInput] = useState(false);
-  const [showAdvanceInput, setShowAdvanceInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDetail, setNewTaskDetail] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(30);
@@ -40,13 +36,8 @@ const App: React.FC = () => {
   const [batteryLevel, setBatteryLevel] = useState(100);
   const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
   
-  // 长期统计
-  const [history, setHistory] = useState<DailyLog[]>([]);
-  const [totalMinutesEver, setTotalMinutesEver] = useState(0);
-  const [showStats, setShowStats] = useState(false);
-
-  // 排序状态
-  const [sortField, setSortField] = useState<SortField>('manual');
+  // 状态清理：移除统计 Modal 开关
+  const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // 初始化与重置逻辑
@@ -71,7 +62,7 @@ const App: React.FC = () => {
         const stats = JSON.parse(savedStats);
         setTotalMinutesToday(stats.minutes || 0);
         setCompletedCountToday(stats.count || 0);
-        // 电池逻辑: 每完成一个任务消耗 10%
+        // 初始电量基于已完成任务
         setBatteryLevel(Math.max(0, 100 - (stats.count || 0) * 12));
       }
     }
@@ -79,46 +70,19 @@ const App: React.FC = () => {
     const savedTasks = localStorage.getItem('mana_tasks_v5');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
 
-    // 加载历史
-    const savedHistory = localStorage.getItem('mana_history_v1');
-    if (savedHistory) {
-      const parsed = JSON.parse(savedHistory);
-      // 确保包含今天的数据
-      const todayStr = new Date().toISOString().split('T')[0];
-      if (!parsed.find((h: DailyLog) => h.date === todayStr)) {
-        parsed.push({ date: todayStr, minutes: 0, count: 0 });
-      }
-      // 只保留最近7天
-      const last7Days = parsed.slice(-7);
-      setHistory(last7Days);
-    } else {
-      setHistory([{ date: new Date().toISOString().split('T')[0], minutes: 0, count: 0 }]);
-    }
-
-    const savedTotalEver = localStorage.getItem('mana_total_ever');
-    if (savedTotalEver) setTotalMinutesEver(Number(savedTotalEver));
+    // 历史统计初始化移除
   }, []);
 
   // 持久化
   useEffect(() => {
     localStorage.setItem('mana_tasks_v5', JSON.stringify(tasks));
     localStorage.setItem('mana_theme', theme);
+    // 自定义数据持久化 (移除统计)
     localStorage.setItem('mana_daily_stats_v4', JSON.stringify({
       minutes: totalMinutesToday,
       count: completedCountToday
     }));
-
-    // 更新历史记录中的今日数据
-    const todayStr = new Date().toISOString().split('T')[0];
-    setHistory(prev => {
-      const newHistory = prev.map(h => 
-        h.date === todayStr ? { ...h, minutes: totalMinutesToday, count: completedCountToday } : h
-      );
-      localStorage.setItem('mana_history_v1', JSON.stringify(newHistory));
-      return newHistory;
-    });
-    localStorage.setItem('mana_total_ever', totalMinutesEver.toString());
-  }, [tasks, theme, totalMinutesToday, completedCountToday, totalMinutesEver]);
+  }, [tasks, theme, totalMinutesToday, completedCountToday]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -126,40 +90,46 @@ const App: React.FC = () => {
     document.body.dataset.theme = newTheme;
   };
 
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'zh' : 'en');
+  };
+
   const addTask = () => {
     if (!newTaskText) return;
     const newTask: Task = {
       id: Date.now().toString(),
       text: newTaskText,
-      detail: newTaskDetail.trim() || newTaskText, // 默认详情同标题
+      detail: newTaskDetail.trim() || newTaskText,
       duration: newTaskDuration,
       createdAt: Date.now(),
     };
     setTasks([newTask, ...tasks]);
+    soundUtils.playCreate();
     setNewTaskText('');
     setNewTaskDetail('');
     setShowInput(false);
-    setShowAdvanceInput(false);
     setSortField('manual');
   };
 
   const clearExpiredTasks = () => {
-    if (!window.confirm("Are you sure you want to clear all unfinished tasks from 7 days ago?")) return;
+    if (!window.confirm(t('clearConfirm'))) return;
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
     setTasks(prev => prev.filter(t => now - t.createdAt < SEVEN_DAYS_MS));
+    soundUtils.playDelete();
   };
 
   const handleComplete = (id: string, duration: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
-    setTotalMinutesToday(prev => prev + duration);
-    setTotalMinutesEver(prev => prev + duration);
-    setCompletedCountToday(prev => {
-      const newCount = prev + 1;
-      setBatteryLevel(Math.max(0, 100 - newCount * 12));
-      return newCount;
+    setTotalMinutesToday(prev => {
+      const newMins = prev + duration;
+      const consumption = (duration / 300) * 100;
+      setBatteryLevel(prevBattery => Math.max(0, prevBattery - consumption));
+      return newMins;
     });
+    setCompletedCountToday(prev => prev + 1);
     
+    soundUtils.playComplete();
     const now = Date.now();
     setRecentCompletions(prev => {
       const filtered = prev.filter(t => now - t < 30 * 60000);
@@ -168,17 +138,20 @@ const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Confirm deletion? This will dissolve the intention bubble.")) {
+    // 强制确认逻辑
+    if (window.confirm(t('deleteConfirm'))) {
       setTasks(prev => prev.filter(t => t.id !== id));
+      soundUtils.playDelete();
     }
   };
+
 
   const displayTasks = useMemo(() => {
     if (sortField === 'manual') return tasks;
     return [...tasks].sort((a, b) => {
       const valA = a[sortField];
       const valB = b[sortField];
-      return sortOrder === 'desc' ? valB - valA : valA - valB;
+      return sortOrder === 'desc' ? Number(valB) - Number(valA) : Number(valA) - Number(valB);
     });
   }, [tasks, sortField, sortOrder]);
 
@@ -191,97 +164,93 @@ const App: React.FC = () => {
     }
   };
 
-  return (
-    <div className="app-container">
-      <header className="mana-header apple-header">
-        <div className="header-top">
-          <div className="mana-pool-info">
-            <span className="mana-label">ENERGY RESERVE</span>
-            <h1 className="mana-value">
-              {totalMinutesToday} <span className="mana-unit">mins</span>
-            </h1>
-          </div>
-          <div className="header-status-group">
-            <Battery percentage={batteryLevel} />
-            <button className="stats-trigger-btn" onClick={() => setShowStats(true)}>
-              <BarChart3 size={24} />
-            </button>
-            <button className="theme-toggle" onClick={toggleTheme}>
-              {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-            </button>
-          </div>
-        </div>
-        <div className="mana-progress-container">
-          <motion.div 
-            className="mana-progress-bar" 
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, (totalMinutesToday / 300) * 100)}%` }}
-            transition={{ type: "spring", stiffness: 50, damping: 15 }}
-          />
-        </div>
-      </header>
+  const appStyle = {
+    '--mana-rgb': batteryLevel > 60 ? '0, 122, 255' : batteryLevel > 20 ? '255, 204, 0' : '255, 59, 48',
+    '--mana-intensity': (batteryLevel / 100) * 0.15
+  } as React.CSSProperties;
 
-      <main className="task-viewport">
+  return (
+    <div className="app-container" style={appStyle}>
+      <header className="mana-header apple-header">
+        <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
+          <div className="mana-header-main">
+            {/* 极简第二行：今日能量 & 垂直电池 - 高亮大字 */}
+            <div className="mana-energy-status">
+              <span className="mana-label-highlight">{t('header.todayEnergy')}</span>
+              <Battery percentage={batteryLevel} />
+            </div>
+          </div>
+          <div className="header-actions-group">
+            <button className="language-toggle action-icon-btn utility-btn" onClick={toggleLanguage}>
+              <Languages size={20} />
+            </button>
+            <button className="theme-toggle action-icon-btn utility-btn" onClick={toggleTheme}>
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
+        </div>
+        {/* 移除电池进度条 */}
         <div className="task-list-header">
-          <h2>Time Vessels</h2>
+          <h2>{t('taskViewport.title')}</h2>
           <button 
             className={`add-task-btn ${showInput ? 'active' : ''}`} 
             onClick={() => setShowInput(!showInput)}
           >
-            <Plus size={36} style={{ transform: showInput ? 'rotate(45deg)' : 'none' }} />
+            <Plus size={36} />
           </button>
         </div>
+      </header>
 
+      <main className="task-viewport">
         <AnimatePresence>
           {showInput && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="quick-add-panel glass-panel elevated"
-            >
-              <div className="input-field">
-                <input 
-                  autoFocus
-                  type="text" 
-                  placeholder="Intention name..."
-                  value={newTaskText}
-                  onChange={(e) => setNewTaskText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addTask()}
-                />
-              </div>
+            <>
+              <motion.div 
+                className="panel-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowInput(false)}
+              />
+              <motion.div 
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                className="quick-add-panel glass-panel elevated"
+              >
+                <div className="input-field">
+                  <input 
+                    autoFocus
+                    type="text" 
+                    placeholder={t('taskViewport.placeholder')}
+                    value={newTaskText}
+                    onChange={(e) => setNewTaskText(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                  />
+                </div>
 
-              <div className="advance-toggle" onClick={() => setShowAdvanceInput(!showAdvanceInput)}>
-                <span>Detailed Background (Optional)</span>
-                {showAdvanceInput ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </div>
-
-              {showAdvanceInput && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="detail-input-area"
-                >
+                <div className="detail-input-area">
                   <textarea 
-                    placeholder="Enter details or subtasks (max 300 words)..."
+                    placeholder={t('taskViewport.detailPlaceholder')}
                     maxLength={300}
                     value={newTaskDetail}
                     onChange={(e) => setNewTaskDetail(e.target.value)}
                   />
                   <div className="char-count">{newTaskDetail.length}/300</div>
-                </motion.div>
-              )}
+                </div>
 
-              <div className="duration-selector">
-                <label>Focus Time: {newTaskDuration} mins</label>
-                <input 
-                  type="range" min="5" max="300" step="5"
-                  value={newTaskDuration}
-                  onChange={(e) => setNewTaskDuration(Number(e.target.value))}
-                />
-              </div>
-              <button className="confirm-add-btn" onClick={addTask}>Establish Intention</button>
-            </motion.div>
+                <div className="duration-selector">
+                  <label>{t('taskViewport.focusTime')}: {newTaskDuration} {t('header.mins')}</label>
+                  <input 
+                    type="range" min="5" max="300" step="5"
+                    value={newTaskDuration}
+                    onChange={(e) => setNewTaskDuration(Number(e.target.value))}
+                    style={{ '--range-percent': `${((newTaskDuration - 5) / 295) * 100}%` } as React.CSSProperties}
+                  />
+                </div>
+                <button className="confirm-add-btn" onClick={addTask}>{t('taskViewport.establishBtn')}</button>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
@@ -291,13 +260,13 @@ const App: React.FC = () => {
               className={`sort-btn ${sortField === 'createdAt' ? 'active' : ''}`}
               onClick={() => cycleSort('createdAt')}
             >
-              Time {sortField === 'createdAt' && (sortOrder === 'desc' ? '↓' : '↑')}
+              {t('controls.time')} {sortField === 'createdAt' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
             <button 
               className={`sort-btn ${sortField === 'duration' ? 'active' : ''}`}
               onClick={() => cycleSort('duration')}
             >
-              Dur. {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
+              {t('controls.duration')} {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
           <button className="clear-expired-btn-mini" onClick={clearExpiredTasks}>
@@ -328,7 +297,7 @@ const App: React.FC = () => {
           
           {tasks.length === 0 && !showInput && (
             <div className="empty-state">
-              <p>No active intentions. Add one above.</p>
+              <p>{t('taskViewport.emptyState')}</p>
             </div>
           )}
         </Reorder.Group>
@@ -341,12 +310,6 @@ const App: React.FC = () => {
         batteryLevel={batteryLevel}
       />
 
-      <StatsModal 
-        isOpen={showStats}
-        onClose={() => setShowStats(false)}
-        history={history}
-        totalMinutesEver={totalMinutesEver}
-      />
     </div>
   );
 };

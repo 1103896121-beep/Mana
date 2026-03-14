@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Trash2, GripVertical, Clock, Calendar, Info } from 'lucide-react';
+import { Check, Trash2, Clock, Calendar, Info, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useTranslation } from '../hooks/useTranslation';
 import './TaskBubble.css';
 
 interface TaskBubbleProps {
@@ -15,6 +16,7 @@ interface TaskBubbleProps {
 }
 
 const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, detail, onComplete, onDelete }) => {
+  const { t } = useTranslation();
   const [isExploding, setIsExploding] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -26,27 +28,35 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
     minute: '2-digit'
   }).replace(/\//g, '-');
 
-  const handleComplete = () => {
+  const handleComplete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 阻止 Reorder 拖拽激活
     setIsExploding(true);
     
-    // 强化版爆炸动效粒子
-    const end = Date.now() + 1200;
+    // 强化版爆炸动效粒子 - 限制在当前元素或手机容器内
+    const end = Date.now() + 1000;
     const colors = ['#007aff', '#EBEBF5', '#64d2ff'];
 
+    // 获取手机容器引用
+    const container = document.querySelector('.phone-container');
+    
     (function frame() {
+      if (!container) return;
+      
       confetti({
-        particleCount: 3,
+        particleCount: 2,
         angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.8 },
-        colors: colors
+        spread: 45,
+        origin: { x: 0.2, y: 0.7 },
+        colors: colors,
+        container: container as HTMLElement
       });
       confetti({
-        particleCount: 3,
+        particleCount: 2,
         angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.8 },
-        colors: colors
+        spread: 45,
+        origin: { x: 0.8, y: 0.7 },
+        colors: colors,
+        container: container as HTMLElement
       });
 
       if (Date.now() < end) {
@@ -54,7 +64,12 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
       }
     }());
 
-    setTimeout(() => onComplete(id, duration), 1800);
+    setTimeout(() => onComplete(id, duration), 1200);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 关键：阻止 Reorder 拖拽劫持点击
+    onDelete(id);
   };
 
   return (
@@ -67,9 +82,7 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
         exit={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
       >
-        <div className="drag-handle">
-          <GripVertical size={22} />
-        </div>
+        {/* 移除拖拽手柄图标 */}
 
         <div className="task-content" onClick={() => setShowDetailModal(true)}>
           <div className="task-header-row">
@@ -92,7 +105,7 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
           <button className="action-btn complete-btn" onClick={handleComplete} title="Release Potential">
             <Check size={20} />
           </button>
-          <button className="action-btn delete-btn" onClick={() => onDelete(id)} title="Dissolve">
+          <button className="action-btn delete-btn" onClick={handleDeleteClick} title="Dissolve">
             <Trash2 size={18} />
           </button>
         </div>
@@ -109,32 +122,32 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, 
             onClick={() => setShowDetailModal(false)}
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
               className="detail-modal glass-panel"
               onClick={e => e.stopPropagation()}
             >
               <div className="detail-header">
-                <h2>Task Detail</h2>
-                <button onClick={() => setShowDetailModal(false)}>Close</button>
+                <h2>{t('taskViewport.detailed')}</h2>
+                <button onClick={() => setShowDetailModal(false)}><X size={20}/></button>
               </div>
               <div className="detail-body">
                 <section>
-                  <label>Title</label>
+                  <label>{t('controls.time')}</label>
                   <p className="full-title">{text}</p>
                 </section>
                 <section>
-                  <label>Background / Subtasks</label>
+                  <label>{t('taskViewport.detailed')}</label>
                   <p className="detail-text">{detail || text}</p>
                 </section>
                 <section className="detail-stats">
-                  <div>
-                    <label>Investment</label>
+                  <div className="stat-vessel">
+                    <label><Clock size={14} />{t('taskViewport.focusTime')}</label>
                     <p>{duration} mins</p>
                   </div>
-                  <div>
-                    <label>Established</label>
+                  <div className="stat-vessel">
+                    <label><Calendar size={14} />{t('controls.time')}</label>
                     <p>{formattedDate}</p>
                   </div>
                 </section>

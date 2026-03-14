@@ -4,9 +4,10 @@
   /* iOS-inspired base scale */
   font-size: 18px; 
 
-  /* iOS Dark Mode Palette (Pure Black Aesthetic) */
-  --color-bg-primary: #000000;
-  --color-bg-secondary: #000000; /* 与背景完全一致，消除视觉边界 */
+  /* iOS Dark Mode Palette (Geek Grey Aesthetic - Not Pure Black) */
+  --color-bg-primary: #0d0d0e;
+  --color-bg-primary-rgb: 13, 13, 14;
+  --color-bg-secondary: #141416;
   --color-primary: #007aff; 
   --color-secondary: #5856d6;
   --color-accent: #64d2ff;
@@ -40,10 +41,15 @@
   
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   --transition-bounce: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Mana Field Variables */
+  --mana-rgb: 0, 122, 255;
+  --mana-intensity: 0.15;
 }
 
 [data-theme='light'] {
   --color-bg-primary: #f2f2f7;
+  --color-bg-primary-rgb: 242, 242, 247;
   --color-bg-secondary: #f2f2f7;
   --color-energy-label: rgba(0, 0, 0, 0.5);
   --color-energy-value: #000000;
@@ -53,6 +59,9 @@
   --glass-bg: rgba(0, 0, 0, 0.03);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+  --mana-rgb: 0, 122, 255;
+  --mana-intensity: 0.1;
 }
 
 * {
@@ -61,6 +70,15 @@
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 隐藏滚动条以提升 App 沉浸感 */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 body {
@@ -91,6 +109,46 @@ body {
   border: 8px solid #2c2c2e; /* Subtle device frame */
   margin: 20px auto;
   overflow: hidden;
+}
+
+/* Mana Field Dynamic Background */
+.app-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, 
+    rgba(var(--mana-rgb), var(--mana-intensity)) 0%, 
+    transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+  animation: mana-pulse 8s ease-in-out infinite;
+}
+
+.app-container::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  z-index: 0;
+  pointer-events: none;
+  animation: noise-drift 20s linear infinite;
+}
+
+@keyframes mana-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes noise-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(5%, 5%); }
 }
 
 /* For mobile devices, take full screen */
