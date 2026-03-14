@@ -33,10 +33,12 @@ def create_doc():
     doc.add_paragraph('• 气泡列表：任务项采用圆润透明的气泡包裹，列表项显示创建的具体时间点。')
     doc.add_paragraph('• 比例优化：针对 iOS 用户调大全局字体与交互组件比例，确保单手操作的准确性。')
     
-    doc.add_heading('3.3 动态能量流转与智能关怀提示', level=2)
-    doc.add_paragraph('• 能量滑动条：用户可通过滑动条实时感知任务对总能量平衡的影响。')
-    doc.add_paragraph('• 实时反馈：任务完成时伴随光晕扩散、能量汇聚等魔法化动效。')
-    doc.add_paragraph('• 智能提醒：系统建立关怀提示词库，实时监测每日任务完成量。当用户过度劳累时，随机弹出库中的温馨或幽默词句，提醒休息。')
+    doc.add_heading('3.3 动态动效与智能关怀提示', level=2)
+    doc.add_paragraph('• 膨胀与爆炸反馈：任务完成时触发 2-3s 的气泡膨胀动效，模拟压力积聚后释放的物理质感。')
+    doc.add_paragraph('• 智能提醒触发方案：系统根据以下三个维度实时监测并随机弹出关怀提示词：')
+    doc.add_paragraph('  1. 累计数量：每日累计每完成 5 个任务；')
+    doc.add_paragraph('  2. 累计时长：每日累计任务总时长达到 120 分钟或其倍数；')
+    doc.add_paragraph('  3. 高频强度：30 分钟内连续完成 3 项及以上任务。')
     
     doc.add_heading('3.4 艺术化产出分享', level=2)
     doc.add_paragraph('• 定制卡片：将一天的生产力数据转化为极致简约的视觉卡片，便于社交分享。')
