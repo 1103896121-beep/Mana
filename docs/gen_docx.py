@@ -26,14 +26,17 @@ def create_doc():
     doc.add_heading('3.1 能量驱动的任务系统', level=2)
     doc.add_paragraph('• Mana值分配：每个任务需绑定特定的能量消耗权重。')
     doc.add_paragraph('• 可视化消耗：随着任务进度，总 Mana 池呈现动态流转效果。')
+    doc.add_paragraph('• 爆炸反馈：任务完成时，原本包裹任务的气泡将触发“爆炸”扩散粒子动效，象征能量的释放。')
     
     doc.add_heading('3.2 任务列表 (Bubble-Style List) 交互系统', level=2)
-    doc.add_paragraph('• 气泡列表：任务以列表形式呈现以确保直观查阅，但单个任务项采用“气泡/球体”视觉包裹，具备轻微的悬浮动态效果。')
-    doc.add_paragraph('• 物理交互：列表项在滑动时具有软弹性质感，模拟气泡碰撞的物理反馈，保留魔法感。')
+    doc.add_paragraph('• 排序与优先级：默认按创建时间排序；用户可在创建时设置优先级，或通过在列表中自由拖拽任务项来实时调整优先级。')
+    doc.add_paragraph('• 气泡列表：任务以列表形式呈现确保直观，但单个任务项采用气泡视觉包裹。')
+    doc.add_paragraph('• 物理交互：列表项在滑动时具有软粘性质感，模拟物理反馈。')
     
-    doc.add_heading('3.3 动态能量流转与反馈', level=2)
+    doc.add_heading('3.3 动态能量流转与智能关怀提示', level=2)
     doc.add_paragraph('• 能量滑动条：用户可通过滑动条实时感知任务对总能量平衡的影响。')
     doc.add_paragraph('• 实时反馈：任务完成时伴随光晕扩散、能量汇聚等魔法化动效。')
+    doc.add_paragraph('• 智能提醒：系统建立关怀提示词库，实时监测每日任务完成量。当用户过度劳累时，随机弹出库中的温馨或幽默词句，提醒休息。')
     
     doc.add_heading('3.4 艺术化产出分享', level=2)
     doc.add_paragraph('• 定制卡片：将一天的生产力数据转化为极致简约的视觉卡片，便于社交分享。')
