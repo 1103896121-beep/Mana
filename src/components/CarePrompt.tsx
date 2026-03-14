@@ -17,25 +17,28 @@ interface CarePromptProps {
   taskCount: number;
   totalMinutes: number;
   recentCount: number;
+  batteryLevel: number;
 }
 
-const CarePrompt: React.FC<CarePromptProps> = ({ taskCount, totalMinutes, recentCount }) => {
+const CarePrompt: React.FC<CarePromptProps> = ({ taskCount, totalMinutes, recentCount, batteryLevel }) => {
   // 触发条件判断
   const triggers = {
     count: taskCount > 0 && taskCount % 5 === 0,
     duration: totalMinutes > 0 && totalMinutes % 120 === 0,
-    intensity: recentCount >= 3
+    intensity: recentCount >= 3,
+    lowBattery: batteryLevel <= 20
   };
 
-  const showPrompt = triggers.count || triggers.duration || triggers.intensity;
+  const showPrompt = triggers.count || triggers.duration || triggers.intensity || triggers.lowBattery;
   
   const promptText = useMemo(() => {
     if (!showPrompt) return '"The flow of time begins with a single intention."';
     
     let prefix = "";
-    if (triggers.intensity) prefix = "[高频触发] ";
-    else if (triggers.duration) prefix = "[深度专注] ";
-    else if (triggers.count) prefix = "[成就达成] ";
+    if (triggers.lowBattery) prefix = "[🔴 能量过低] ";
+    else if (triggers.intensity) prefix = "[⚡ 高频触发] ";
+    else if (triggers.duration) prefix = "[💎 深度专注] ";
+    else if (triggers.count) prefix = "[🏆 成就达成] ";
     
     const index = Math.floor(Math.random() * PROMPT_LIBRARY.length);
     return prefix + PROMPT_LIBRARY[index];

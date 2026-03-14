@@ -1,0 +1,56 @@
+.apple-battery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: var(--transition-smooth);
+}
+
+.battery-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charging-bolt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-battery-healthy);
+  opacity: 0.8;
+}
+
+.battery-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 状态色逻辑 */
+.apple-battery.healthy {
+  color: var(--color-battery-healthy);
+}
+
+.apple-battery.warning {
+  color: var(--color-battery-warning);
+}
+
+.apple-battery.critical {
+  color: var(--color-battery-low);
+  animation: pulse-low 2s infinite ease-in-out;
+}
+
+@keyframes pulse-low {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.battery-critical {
+  stroke-width: 2.5px;
+}

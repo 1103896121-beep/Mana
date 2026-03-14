@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Trash2, GripVertical, Clock, Calendar } from 'lucide-react';
+import { Check, Trash2, GripVertical, Clock, Calendar, Info } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import './TaskBubble.css';
 
@@ -9,126 +9,141 @@ interface TaskBubbleProps {
   text: string;
   duration: number;
   createdAt: number;
+  detail?: string;
   onComplete: (id: string, duration: number) => void;
   onDelete: (id: string) => void;
 }
 
-const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, onComplete, onDelete }) => {
-  const [isExpanding, setIsExpanding] = useState(false);
-  const [isDone, setIsDone] = useState(false);
+const TaskBubble: React.FC<TaskBubbleProps> = ({ id, text, duration, createdAt, detail, onComplete, onDelete }) => {
+  const [isExploding, setIsExploding] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // 格式化为：年-月-日 时:分
-  const formatFullDateTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
-    return `${y}-${m}-${d} ${hh}:${mm}`;
-  };
+  const formattedDate = new Date(createdAt).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).replace(/\//g, '-');
 
   const handleComplete = () => {
-    setIsExpanding(true);
+    setIsExploding(true);
     
-    // 0.8s 极速膨胀阶段 (Rapid expansion phase)
-    setTimeout(() => {
-      setIsExpanding(false);
-      setIsDone(true);
-      
-      // 增强型炫酷粒子效果 (Enhanced Cool Particle Effect)
-      const count = 150;
-      const defaults: confetti.Options = {
-        origin: { y: 0.6 },
-        spread: 360,
-        ticks: 100,
-        gravity: 0.8,
-        decay: 0.94,
-        startVelocity: 30,
-        shapes: ['circle', 'square'],
-        colors: ['#007aff', '#5856d6', '#64d2ff', '#ff2d55', '#ffffff']
-      };
+    // 强化版爆炸动效粒子
+    const end = Date.now() + 1200;
+    const colors = ['#007aff', '#EBEBF5', '#64d2ff'];
 
-      function shoot(angle: number, scalar: number) {
-        confetti({
-          ...defaults,
-          particleCount: Math.floor(count * scalar),
-          angle,
-          scalar
-        });
+    (function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 },
+        colors: colors
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 },
+        colors: colors
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
       }
+    }());
 
-      shoot(0, 2);
-      shoot(60, 1.5);
-      shoot(120, 1.5);
-      shoot(180, 2);
-      shoot(240, 1.5);
-      shoot(300, 1.5);
-
-      // 1.0s 后正式通知完成 (Notify completion after 1s explosion)
-      setTimeout(() => {
-        onComplete(id, duration);
-      }, 1000);
-    }, 800);
+    setTimeout(() => onComplete(id, duration), 1800);
   };
 
   return (
-    <AnimatePresence>
-      {!isDone && (
-        <motion.div
-          layout
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ 
-            opacity: 1, 
-            scale: isExpanding ? 1.5 : 1, 
-            y: 0,
-            filter: isExpanding ? 'blur(4px) brightness(1.2)' : 'blur(0px) brightness(1)',
-            boxShadow: isExpanding ? '0 0 50px var(--color-primary)' : 'var(--glass-shadow)'
-          }}
-          exit={{ opacity: 0, scale: 2.5, filter: 'blur(30px)' }}
-          transition={{ 
-            scale: { duration: isExpanding ? 0.8 : 0.4, ease: "circOut" },
-            default: { duration: 0.4 }
-          }}
-          whileHover={!isExpanding ? { scale: 1.02, backgroundColor: 'var(--color-bg-secondary)' } : {}}
-          className={`task-bubble-item glass-panel ${isExpanding ? 'expanding' : ''}`}
-        >
-          <div className="drag-handle">
-            <GripVertical size={24} />
-          </div>
-          
-          <div className="task-content">
-            <div className="task-top-row">
-              <span className="task-text">{text}</span>
-              <div className="task-time-stamp">
-                <Calendar size={12} className="meta-icon-small" />
-                <span>{formatFullDateTime(createdAt)}</span>
-              </div>
-            </div>
-            <div className="task-meta">
-              <Clock size={16} className="meta-icon" />
-              <span className="task-duration">{duration} mins</span>
-            </div>
-          </div>
+    <>
+      <motion.div 
+        layout
+        className={`task-bubble-item ${isExploding ? 'exploding' : ''}`}
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+      >
+        <div className="drag-handle">
+          <GripVertical size={22} />
+        </div>
 
-          <div className="task-actions">
-            <button 
-              className={`action-btn complete-btn ${isExpanding ? 'disabled' : ''}`} 
-              onClick={!isExpanding ? handleComplete : undefined}
-              title="Release Potential"
-            >
-              <Check size={26} />
-            </button>
-            <button 
-              className="action-btn delete-btn" 
-              onClick={() => onDelete(id)}
-            >
-              <Trash2 size={24} />
-            </button>
+        <div className="task-content" onClick={() => setShowDetailModal(true)}>
+          <div className="task-header-row">
+            <h3 className="task-title-text">{text}</h3>
+            {(detail || text.length > 20) && <Info size={16} className="detail-indicator" />}
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <div className="task-meta">
+            <div className="meta-item">
+              <Calendar size={12} />
+              <span>{formattedDate}</span>
+            </div>
+            <div className="meta-item">
+              <Clock size={12} />
+              <span>{duration} mins</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bubble-actions">
+          <button className="action-btn complete-btn" onClick={handleComplete} title="Release Potential">
+            <Check size={20} />
+          </button>
+          <button className="action-btn delete-btn" onClick={() => onDelete(id)} title="Dissolve">
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </motion.div>
+
+      {/* 详情弹窗 */}
+      <AnimatePresence>
+        {showDetailModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="detail-overlay"
+            onClick={() => setShowDetailModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="detail-modal glass-panel"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="detail-header">
+                <h2>Task Detail</h2>
+                <button onClick={() => setShowDetailModal(false)}>Close</button>
+              </div>
+              <div className="detail-body">
+                <section>
+                  <label>Title</label>
+                  <p className="full-title">{text}</p>
+                </section>
+                <section>
+                  <label>Background / Subtasks</label>
+                  <p className="detail-text">{detail || text}</p>
+                </section>
+                <section className="detail-stats">
+                  <div>
+                    <label>Investment</label>
+                    <p>{duration} mins</p>
+                  </div>
+                  <div>
+                    <label>Established</label>
+                    <p>{formattedDate}</p>
+                  </div>
+                </section>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

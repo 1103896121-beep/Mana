@@ -6,12 +6,20 @@
   gap: var(--spacing-md);
   position: relative;
   overflow: hidden;
+  background: transparent; /* 背景透明，完全融合 */
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .header-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+}
+
+.header-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .mana-pool-info {
@@ -21,7 +29,7 @@
 
 .mana-label {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-energy-label);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -29,17 +37,17 @@
 }
 
 .mana-value {
-  font-size: 3.2rem;
-  font-weight: 700;
+  font-size: 3.5rem;
+  font-weight: 800;
   line-height: 1;
-  color: var(--color-energy-value); /* 使用高亮主色值 */
+  color: var(--color-energy-value); /* 锁定亮白 */
 }
 
 .mana-unit {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: var(--color-energy-label);
-  font-weight: 500;
-  margin-left: 4px;
+  font-weight: 600;
+  margin-left: 6px;
 }
 
 .theme-toggle {
@@ -57,22 +65,22 @@
 }
 
 .mana-progress-container {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .mana-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-energy-value));
-  box-shadow: var(--aura-mana-high);
+  background: linear-gradient(90deg, var(--color-primary), #64d2ff);
+  box-shadow: 0 0 20px rgba(0, 122, 255, 0.4);
 }
 
 .task-viewport {
   flex: 1;
-  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -82,19 +90,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 4px;
 }
 
 .task-list-header h2 {
   font-size: 1.8rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   color: var(--color-text-header);
 }
 
 .add-task-btn {
-  width: 64px;
-  height: 64px;
-  border-radius: 32px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
   border: none;
   background: var(--color-primary);
   color: white;
@@ -103,133 +112,134 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition-bounce);
-  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+  box-shadow: 0 6px 15px rgba(0, 122, 255, 0.3);
 }
 
 .add-task-btn.active {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-main);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
   box-shadow: none;
 }
 
-/* 控制栏布局优化 */
-.controls-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
-  margin-top: -10px;
-}
-
-.sorting-controls {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-.sort-btn {
-  padding: 10px 16px;
-  border-radius: 20px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--glass-border);
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.sort-btn.active {
-  background: var(--color-primary);
-  color: white;
-  border-color: transparent;
-}
-
-.clear-expired-btn-mini {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  background: transparent;
-  border: 1px solid #ff3b30;
-  color: #ff3b30;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.clear-expired-btn-mini:hover {
-  background: rgba(255, 59, 48, 0.15);
-  box-shadow: 0 0 15px rgba(255, 59, 48, 0.2);
-}
-
 .quick-add-panel {
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
+  padding: 24px;
+  border: 1px solid var(--glass-border);
 }
 
-.quick-add-panel input[type="text"] {
+.quick-add-panel.elevated {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.input-field input {
+  width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 2px solid var(--glass-border);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   color: var(--color-text-main);
   padding: 12px 0;
-  font-size: 1.7rem;
+  font-size: 1.6rem;
   font-weight: 700;
   outline: none;
+  margin-bottom: 16px;
+}
+
+.advance-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.detail-input-area {
+  margin-bottom: 20px;
+}
+
+.detail-input-area textarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
 }
 
 .duration-selector {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.duration-selector label {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-text-muted);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .confirm-add-btn {
+  width: 100%;
   background: var(--color-primary);
   color: white;
   border: none;
-  padding: 24px;
-  border-radius: var(--radius-card);
-  font-size: 1.3rem;
+  padding: 22px;
+  border-radius: 18px;
+  font-size: 1.2rem;
   font-weight: 800;
-  cursor: pointer;
-  transition: var(--transition-bounce);
 }
 
-.footer-console {
-  margin-top: auto;
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-lg);
-  text-align: center;
-  min-height: 120px;
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.sort-btn {
+  padding: 10px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sort-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.clear-expired-btn-mini {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  color: #ff3b30;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.care-prompt {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  line-height: 1.6;
-  max-width: 90%;
+.bubble-list-container {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 100px;
 }
 
 .empty-state {
-  margin-top: 100px;
   text-align: center;
+  padding: 60px 20px;
   color: var(--color-text-muted);
-  font-size: 1.2rem;
   font-weight: 500;
 }

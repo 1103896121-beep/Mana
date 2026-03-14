@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Plus, Moon, Sun, Trash2 } from 'lucide-react';
+import { Plus, Moon, Sun, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CarePrompt from './components/CarePrompt';
+import Battery from './components/Battery';
 import './App.css';
 
 interface Task {
@@ -10,6 +11,7 @@ interface Task {
   text: string;
   duration: number;
   createdAt: number;
+  detail?: string;
 }
 
 type SortField = 'createdAt' | 'duration' | 'manual';
@@ -19,12 +21,15 @@ const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showInput, setShowInput] = useState(false);
+  const [showAdvanceInput, setShowAdvanceInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskDetail, setNewTaskDetail] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(30);
   
-  // 统计数据
+  // 统计与电池
   const [totalMinutesToday, setTotalMinutesToday] = useState(0);
   const [completedCountToday, setCompletedCountToday] = useState(0);
+  const [batteryLevel, setBatteryLevel] = useState(100);
   const [recentCompletions, setRecentCompletions] = useState<number[]>([]);
 
   // 排序状态
@@ -33,43 +38,40 @@ const App: React.FC = () => {
 
   // 初始化与重置逻辑
   useEffect(() => {
-    // 基础设置加载
     const savedTheme = localStorage.getItem('mana_theme');
     if (savedTheme) {
       setTheme(savedTheme as 'dark' | 'light');
       document.body.dataset.theme = savedTheme;
-    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-      setTheme('light');
-      document.body.dataset.theme = 'light';
     }
 
-    // 检查日期重置
     const today = new Date().toDateString();
     const lastActiveDate = localStorage.getItem('mana_last_active_date');
     
     if (lastActiveDate !== today) {
-      // 跨天，重置统计数据
       setTotalMinutesToday(0);
       setCompletedCountToday(0);
+      setBatteryLevel(100);
       localStorage.setItem('mana_last_active_date', today);
     } else {
-      const savedStats = localStorage.getItem('mana_daily_stats_v3');
+      const savedStats = localStorage.getItem('mana_daily_stats_v4');
       if (savedStats) {
         const stats = JSON.parse(savedStats);
         setTotalMinutesToday(stats.minutes || 0);
         setCompletedCountToday(stats.count || 0);
+        // 电池逻辑: 每完成一个任务消耗 10%
+        setBatteryLevel(Math.max(0, 100 - (stats.count || 0) * 12));
       }
     }
 
-    const savedTasks = localStorage.getItem('mana_tasks_v4');
+    const savedTasks = localStorage.getItem('mana_tasks_v5');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
   }, []);
 
   // 持久化
   useEffect(() => {
-    localStorage.setItem('mana_tasks_v4', JSON.stringify(tasks));
+    localStorage.setItem('mana_tasks_v5', JSON.stringify(tasks));
     localStorage.setItem('mana_theme', theme);
-    localStorage.setItem('mana_daily_stats_v3', JSON.stringify({
+    localStorage.setItem('mana_daily_stats_v4', JSON.stringify({
       minutes: totalMinutesToday,
       count: completedCountToday
     }));
@@ -86,35 +88,33 @@ const App: React.FC = () => {
     const newTask: Task = {
       id: Date.now().toString(),
       text: newTaskText,
+      detail: newTaskDetail.trim() || newTaskText, // 默认详情同标题
       duration: newTaskDuration,
       createdAt: Date.now(),
     };
     setTasks([newTask, ...tasks]);
     setNewTaskText('');
+    setNewTaskDetail('');
     setShowInput(false);
+    setShowAdvanceInput(false);
     setSortField('manual');
   };
 
   const clearExpiredTasks = () => {
     if (!window.confirm("Are you sure you want to clear all unfinished tasks from 7 days ago?")) return;
-    
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
-    const beforeCount = tasks.length;
-    const filteredTasks = tasks.filter(t => now - t.createdAt < SEVEN_DAYS_MS);
-    
-    if (filteredTasks.length < beforeCount) {
-      setTasks(filteredTasks);
-      alert(`Successfully cleared ${beforeCount - filteredTasks.length} tasks.`);
-    } else {
-      alert("No tasks over 7 days found.");
-    }
+    setTasks(prev => prev.filter(t => now - t.createdAt < SEVEN_DAYS_MS));
   };
 
   const handleComplete = (id: string, duration: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
     setTotalMinutesToday(prev => prev + duration);
-    setCompletedCountToday(prev => prev + 1);
+    setCompletedCountToday(prev => {
+      const newCount = prev + 1;
+      setBatteryLevel(Math.max(0, 100 - newCount * 12));
+      return newCount;
+    });
     
     const now = Date.now();
     setRecentCompletions(prev => {
@@ -129,7 +129,6 @@ const App: React.FC = () => {
     }
   };
 
-  // 排序处理
   const displayTasks = useMemo(() => {
     if (sortField === 'manual') return tasks;
     return [...tasks].sort((a, b) => {
@@ -148,16 +147,9 @@ const App: React.FC = () => {
     }
   };
 
-  const handleReorder = (newOrder: Task[]) => {
-    setTasks(newOrder);
-    if (sortField !== 'manual') {
-      setSortField('manual');
-    }
-  };
-
   return (
     <div className="app-container">
-      <header className="mana-header glass-panel aura-float">
+      <header className="mana-header apple-header">
         <div className="header-top">
           <div className="mana-pool-info">
             <span className="mana-label">ENERGY RESERVE</span>
@@ -165,9 +157,12 @@ const App: React.FC = () => {
               {totalMinutesToday} <span className="mana-unit">mins</span>
             </h1>
           </div>
-          <button className="theme-toggle" onClick={toggleTheme}>
-            {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
+          <div className="header-status-group">
+            <Battery percentage={batteryLevel} />
+            <button className="theme-toggle" onClick={toggleTheme}>
+              {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+          </div>
         </div>
         <div className="mana-progress-container">
           <motion.div 
@@ -182,15 +177,66 @@ const App: React.FC = () => {
       <main className="task-viewport">
         <div className="task-list-header">
           <h2>Time Vessels</h2>
-          <div className="header-actions">
-            <button 
-              className={`add-task-btn ${showInput ? 'active' : ''}`} 
-              onClick={() => setShowInput(!showInput)}
-            >
-              <Plus size={36} style={{ transform: showInput ? 'rotate(45deg)' : 'none' }} />
-            </button>
-          </div>
+          <button 
+            className={`add-task-btn ${showInput ? 'active' : ''}`} 
+            onClick={() => setShowInput(!showInput)}
+          >
+            <Plus size={36} style={{ transform: showInput ? 'rotate(45deg)' : 'none' }} />
+          </button>
         </div>
+
+        <AnimatePresence>
+          {showInput && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="quick-add-panel glass-panel elevated"
+            >
+              <div className="input-field">
+                <input 
+                  autoFocus
+                  type="text" 
+                  placeholder="Intention name..."
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                />
+              </div>
+
+              <div className="advance-toggle" onClick={() => setShowAdvanceInput(!showAdvanceInput)}>
+                <span>Detailed Background (Optional)</span>
+                {showAdvanceInput ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </div>
+
+              {showAdvanceInput && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="detail-input-area"
+                >
+                  <textarea 
+                    placeholder="Enter details or subtasks (max 300 words)..."
+                    maxLength={300}
+                    value={newTaskDetail}
+                    onChange={(e) => setNewTaskDetail(e.target.value)}
+                  />
+                  <div className="char-count">{newTaskDetail.length}/300</div>
+                </motion.div>
+              )}
+
+              <div className="duration-selector">
+                <label>Focus Time: {newTaskDuration} mins</label>
+                <input 
+                  type="range" min="5" max="300" step="5"
+                  value={newTaskDuration}
+                  onChange={(e) => setNewTaskDuration(Number(e.target.value))}
+                />
+              </div>
+              <button className="confirm-add-btn" onClick={addTask}>Establish Intention</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="controls-bar">
           <div className="sorting-controls">
@@ -207,45 +253,18 @@ const App: React.FC = () => {
               Dur. {sortField === 'duration' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
-          
-          <button className="clear-expired-btn-mini" onClick={clearExpiredTasks} title="Clear Tasks > 7 Days">
+          <button className="clear-expired-btn-mini" onClick={clearExpiredTasks}>
             <Trash2 size={18} />
           </button>
         </div>
-
-        <AnimatePresence>
-          {showInput && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="quick-add-panel glass-panel"
-            >
-              <input 
-                autoFocus
-                type="text" 
-                placeholder="Name your intention..."
-                value={newTaskText}
-                onChange={(e) => setNewTaskText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addTask()}
-              />
-              <div className="duration-selector">
-                <label>Investment: {newTaskDuration} minutes</label>
-                <input 
-                  type="range" min="5" max="300" step="5"
-                  value={newTaskDuration}
-                  onChange={(e) => setNewTaskDuration(Number(e.target.value))}
-                />
-              </div>
-              <button className="confirm-add-btn" onClick={addTask}>Establish Intention</button>
-            </motion.div>
-          )}
-        </AnimatePresence>
         
         <Reorder.Group 
           axis="y" 
           values={displayTasks} 
-          onReorder={handleReorder}
+          onReorder={(newOrder) => {
+            setTasks(newOrder);
+            if (sortField !== 'manual') setSortField('manual');
+          }}
           className="bubble-list-container"
         >
           <AnimatePresence mode="popLayout">
@@ -262,7 +281,7 @@ const App: React.FC = () => {
           
           {tasks.length === 0 && !showInput && (
             <div className="empty-state">
-              <p>The timeline is empty. Create a task to begin.</p>
+              <p>No active intentions. Add one above.</p>
             </div>
           )}
         </Reorder.Group>
@@ -272,6 +291,7 @@ const App: React.FC = () => {
         taskCount={completedCountToday} 
         totalMinutes={totalMinutesToday}
         recentCount={recentCompletions.length}
+        batteryLevel={batteryLevel}
       />
     </div>
   );
