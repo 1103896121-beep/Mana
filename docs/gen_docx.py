@@ -27,9 +27,9 @@ def create_doc():
     doc.add_paragraph('• Mana值分配：每个任务需绑定特定的能量消耗权重。')
     doc.add_paragraph('• 可视化消耗：随着任务进度，总 Mana 池呈现动态流转效果。')
     
-    doc.add_heading('3.2 任务球 (Task Orbs) 物理交互系统', level=2)
-    doc.add_paragraph('• 灵动悬浮：任务以球体形式存在，具有呼吸感。')
-    doc.add_paragraph('• 物理属性：球体间存在碰撞、引力感，通过重力感应或手势交互模拟物理世界。')
+    doc.add_heading('3.2 任务列表 (Bubble-Style List) 交互系统', level=2)
+    doc.add_paragraph('• 气泡列表：任务以列表形式呈现以确保直观查阅，但单个任务项采用“气泡/球体”视觉包裹，具备轻微的悬浮动态效果。')
+    doc.add_paragraph('• 物理交互：列表项在滑动时具有软弹性质感，模拟气泡碰撞的物理反馈，保留魔法感。')
     
     doc.add_heading('3.3 动态能量流转与反馈', level=2)
     doc.add_paragraph('• 能量滑动条：用户可通过滑动条实时感知任务对总能量平衡的影响。')
