@@ -24,12 +24,7 @@ export const translations = {
     clearConfirm: "Are you sure you want to clear all unfinished tasks from 7 days ago?",
     carePrompt: {
       default: '"The flow of time begins with a single task."',
-      highIntensity: "[⚡ High Intensity] ",
-      deepFocus: "[💎 Deep Focus] ",
-      achievement: "[🏆 Achievement] ",
-      lowEnergy: "[🔴 Low Energy] ",
-      coffeeBreak: "You've finished 3 tasks quickly. Stop and take a rest, have a cup of coffee. ☕",
-      overwork: "You've worked too hard today. Please avoid over-exertion, balance work and rest, and relax. 🛑",
+      overwork: "You've worked too hard today. Please take a break. 🛑",
     },
     battery: {
       healthy: "Healthy",
@@ -67,13 +62,8 @@ export const translations = {
     deleteConfirm: "确认删除？这将消解任务气泡。",
     clearConfirm: "确定要清理 7 天前所有未完成的任务吗？",
     carePrompt: {
-      default: "“时间的流动始于一个单一的任务。”",
-      highIntensity: "[⚡ 高频触发] ",
-      deepFocus: "[💎 深度专注] ",
-      achievement: "[🏆 成就达成] ",
-      lowEnergy: "[🔴 极低能量] ",
-      coffeeBreak: "你在短时间内连续完成了 3 件事，停下来喝杯咖啡，稍微休息一下吧。☕",
-      overwork: "你今天已经非常努力了，请注意劳逸结合，放下手头的事情放松一下吧。🛑",
+      default: '「时间的流动始于一个单一的任务。」',
+      overwork: "你今天已经非常努力了，请注意劳逸结合。🛑",
     },
     battery: {
       healthy: "良好",
@@ -90,46 +80,61 @@ export const translations = {
   }
 };
 
-export const PROMPTS = {
-  en: [
-    "🔋 Energy pool is at its peak, time for some magic rest.",
-    "🌙 Even great mages need to meditate, put down your wand.",
-    "🍃 Energy is leaking, breathe deep and feel the silence.",
-    "🍵 Productivity isn't overdrawing, but balance. How about tea?",
-    "⭐ Your achievements shine tonight, don't let fatigue hide them.",
-    "🔮 Prophecy: the next 15 minutes belong to the sofa.",
-    "🧘‍♀️ Stop to make the next energy burst stronger.",
-    "🛑 Magic Ban: Overwork detected, enter 'Empty Mode' now.",
-    "🧘 Focus is limited magic, rest flows it better.",
-    "☕ You need a warm breath more than a task right now."
-  ],
-  zh: [
-    "🔋 能量池已达峰值，是时候让魔法休息一下了。",
-    "🌙 即使是伟大的大魔法师也需要冥想，请放下魔杖休息片刻。",
-    "🍃 能量正在过度流失，请深呼吸，感受周围的宁静。",
-    "🍵 生产力不是透支，而是平衡。来杯热茶如何？",
-    "⭐ 今天的成就已闪耀星空，别让疲劳遮住了光芒。",
-    "🔮 预言显示：接下来的15分钟属于沙发和远方。",
-    "🧘‍♀️ 停下脚步，是为了让下一次能量爆发更强劲。",
-    "🛑 魔法禁令：检测到过度劳累，请立即开启‘放空模式’。",
-    "🧘 专注力是有限的魔法，休息是为了更好的流转。",
-    "☕ 现在的你，比任务更需要一次温暖的呼吸。"
-  ]
+// 温馨提示文案库 - 3 类触发条件各 5 条
+export const CARE_PROMPTS = {
+  // ⚡ 效率模式：30分钟内连续完成 3 条
+  intensity: {
+    en: [
+      "🚀 Triple combo achieved! Take a sip of water.",
+      "⚡ Three in a row! Let your brain switch channels.",
+      "🎯 Fast & precise, but don't forget to blink & stretch.",
+      "🔥 Streak mode! Reward yourself with 5 min of daydreaming.",
+      "💨 Full speed ahead — now it's your slow-down moment.",
+    ],
+    zh: [
+      "🚀 你刚刚像火箭一样高效！停下来喝口水吧。",
+      "⚡ 三连击达成！让大脑切换一下频道。",
+      "🎯 精准又快速，但别忘了眨眨眼、伸伸腰。",
+      "🔥 连续作战模式！奖励自己 5 分钟放空时间。",
+      "💨 速度感拉满，现在是属于你的慢节奏时刻。",
+    ],
+  },
+  // ☕ 深度专注：每累计 60 分钟
+  deepFocus: {
+    en: [
+      "☕ You've worked hard for 60 minutes, treat yourself to a coffee.",
+      "🧘 Sustained focus is a superpower, but it needs recharging too.",
+      "🌿 60 minutes of deep work — get up and feel the sunshine.",
+      "⏰ You've been grinding for 60 minutes! Stand up and move around.",
+      "🎵 A full 60-minute session — listen to a favorite song and relax.",
+    ],
+    zh: [
+      "☕ 已辛苦60分钟了，给自己冲杯咖啡吧。",
+      "🧘 已辛苦60分钟了，超能力也需要充电。",
+      "🌿 已辛苦60分钟了，起来走走感受下阳光。",
+      "⏰ 已辛苦60分钟了！站起来活动一下身体吧。",
+      "🎵 已辛苦60分钟了，听首喜欢的歌放松一下。",
+    ],
+  },
+  // 🏆 成就达成：每累计 5 条任务
+  achievement: {
+    en: [
+      "🏆 Another 5 done — you're amazing today!",
+      "🌟 Five-star achievement unlocked! Take a break, you deserve it.",
+      "🎉 High output mode! But remember to recharge your battery.",
+      "💪 Steady output — keep the rhythm going!",
+      "🥇 Milestone reached! Treat yourself to something nice.",
+    ],
+    zh: [
+      "🏆 又完成了 5 件事，你今天真的很棒！",
+      "🌟 五星成就解锁！休息一下，你值得。",
+      "🎉 高产出模式！但记得给电池充充电。",
+      "💪 稳定输出中，注意保持节奏感哦。",
+      "🥇 里程碑达成！奖励自己一个小确幸。",
+    ],
+  },
 };
 
-export const REST_PROMPTS = {
-  en: [
-    "⚠️ Core Overheating! Energy at critical point, forced rest.",
-    "🛑 Alert: Insufficient energy, continuation may crash the system.",
-    "💤 Battery low, plug yourself into the 'Sleep Socket'.",
-    "🥤 Low energy! You need sugar and water more than a list.",
-    "🌙 Magic dry, forced casting is futile, hygiene now."
-  ],
-  zh: [
-    "⚠️ 核心过热！能量已降至临界点，请强制休息。",
-    "🛑 警报：能量供应不足，继续工作可能导致系统崩溃。",
-    "💤 电池告急，请将自己接入‘睡眠插座’进行充电。",
-    "🥤 极低能量状态！比起清单，你现在更需要糖分和水分。",
-    "🌙 魔法干涸，强行施法是徒劳的，请立即进入休眠。"
-  ]
-};
+// NOTE: 以下旧导出保留向后兼容，后续可删除
+export const PROMPTS = CARE_PROMPTS.deepFocus;
+export const REST_PROMPTS = CARE_PROMPTS.intensity;

@@ -11,10 +11,16 @@
     0 0 0 0.5px rgba(255, 255, 255, 0.15); 
   gap: 12px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  width: 100%;
+  overflow: hidden; /* Restore clipping */
   outline: 1px solid transparent;
+}
+
+.task-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex: 1;
 }
 
 [data-theme='light'] .task-bubble-item {
@@ -61,6 +67,7 @@
   /* 允许在长标题时换行，或者稍微宽松点 */
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
@@ -95,6 +102,7 @@
   align-items: center;
   gap: 6px;
 }
+
 
 .bubble-actions {
   display: flex;
@@ -279,8 +287,8 @@
   color: #666666;
 }
 
-/* 爆炸卡片本身只需隐藏（动画由Portal中的克隆体完成，保持原位置占位） */
+/* 爆炸卡片本身不需要强制隐藏，通过 motion.div 的 opacity 和 scale 自然消失 */
 .task-bubble-item.exploding {
-  visibility: hidden; 
   pointer-events: none;
+  z-index: 1000; /* Ensure it stays on top during animation */
 }

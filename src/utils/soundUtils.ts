@@ -1,7 +1,5 @@
 class SoundUtils {
   private audioCtx: AudioContext | null = null;
-  private audioBuffer: AudioBuffer | null = null;
-  private isLoaded = false;
 
   constructor() {
     // Attempt pre-load as soon as class is instantiated
@@ -13,79 +11,55 @@ class SoundUtils {
   public init() {
     if (!this.audioCtx) {
       this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.loadAudio();
     }
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
   }
 
-  private async loadAudio() {
-    if (this.isLoaded || !this.audioCtx) return;
-    try {
-      const response = await fetch('/sounds/pouring-coffee.m4a');
-      const arrayBuffer = await response.arrayBuffer();
-      this.audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
-      this.isLoaded = true;
-    } catch (e) {
-      console.warn("Failed to load coffee recording:", e);
-    }
-  }
 
   public playCreate() {
     // Silent for task creation
   }
 
-  // Task completed: Liquid pouring sound with dynamic resonance
-  public playComplete(level: number = 0) {
-    try {
-      this.init();
-      if (!this.audioCtx) return;
+  // 咕咚咕咚冒泡声 (模拟能量注入)
+  public playBubbling() {
+    this.init();
+    if (!this.audioCtx) return;
+    
+    const now = this.audioCtx.currentTime;
+    const duration = 2.5; // 冒泡持续时间
+    
+    // Create a master gain node for the bubbling sound to control its overall volume
+    const masterGain = this.audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.4, now); // Lowered from 1.0 for better comfort
+    masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // Shorter fade
+    masterGain.connect(this.audioCtx.destination);
 
-      const t = this.audioCtx.currentTime;
-
-      if (this.audioBuffer) {
-        // -- Real Recording Playback --
-        const source = this.audioCtx.createBufferSource();
-        source.buffer = this.audioBuffer;
-
-        // 1. Base Gain for softness
-        const gainNode = this.audioCtx.createGain();
-        gainNode.gain.setValueAtTime(0.45, t); // Softer base volume
-        
-        // 2. Softness Filter: Remove harsh high frequencies
-        const softFilter = this.audioCtx.createBiquadFilter();
-        softFilter.type = 'lowpass';
-        softFilter.frequency.setValueAtTime(3200, t);
-        softFilter.Q.setValueAtTime(0.7, t);
-
-        // 3. Dynamic Filling Resonance:
-        // Lower level (empty) -> lower frequency resonance (deep)
-        // Higher level (full) -> higher frequency resonance (tight/splashy)
-        const fillFilter = this.audioCtx.createBiquadFilter();
-        fillFilter.type = 'peaking';
-        const startFreq = 350 + (level * 8); // 350Hz (empty) to 1150Hz (full)
-        fillFilter.frequency.setValueAtTime(startFreq, t);
-        fillFilter.frequency.exponentialRampToValueAtTime(startFreq + 150, t + 3.0);
-        fillFilter.Q.setValueAtTime(5, t);
-        fillFilter.gain.setValueAtTime(10, t); // Strong resonance
-
-        // Fade out at 3s to ensure strictly 3s duration
-        gainNode.gain.exponentialRampToValueAtTime(0.001, t + 3.0);
-
-        // Routing: source -> softFilter -> fillFilter -> gainNode -> destination
-        source.connect(softFilter);
-        softFilter.connect(fillFilter);
-        fillFilter.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        
-        source.start(t);
-        source.stop(t + 3.0);
-        return;
-      }
-    } catch (e) {
-      console.warn("Coffee pour sound failed: ", e);
+    // Create multiple overlapping bubble sounds
+    for (let i = 0; i < 15; i++) {
+      const startTime = now + i * 0.15;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      
+      // Low-frequency noise to simulate water flow/bubbles
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(120 + Math.random() * 80, startTime);
+      osc.frequency.exponentialRampToValueAtTime(300 + Math.random() * 200, startTime + 0.1);
+      
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.15, startTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+      
+      osc.connect(gain);
+      gain.connect(masterGain); // Connect to the bubbling master gain
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.2);
     }
+
+    // Fade out the master gain for the bubbling sound
+    masterGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
   }
 
   public playDelete() {

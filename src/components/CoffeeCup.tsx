@@ -1,11 +1,13 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './CoffeeCup.css';
 
 interface CoffeeCupProps {
   percentage: number;
+  isBubbling?: boolean;
 }
 
-const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage }) => {
+const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage, isBubbling = false }) => {
   // 醇厚温暖的咖啡/拿铁渐变
   const getLiquidGradient = () => {
     if (percentage > 80) return ['#A0522D', '#5C4033']; 
@@ -30,8 +32,17 @@ const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage }) => {
       </div>
 
       <div className="cute-mug-wrapper">
-        
-        {/* 已按用户要求移除把手，保留最纯净的玻璃形态 */}
+        {/* 热气蒸汽效果 */}
+        {percentage > 0 && (
+          <div className="steam-container">
+            <div className="steam-line steam-1"></div>
+            <div className="steam-line steam-2"></div>
+            <div className="steam-line steam-3"></div>
+          </div>
+        )}
+
+        {/* 把手 (The Glass Handle) */}
+        <div className="cute-mug-handle"></div>
 
         {/* 主杯体 (Chubby Main Body) */}
         <div className="cute-mug-body">
@@ -50,6 +61,32 @@ const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage }) => {
           <div className="cute-highlight right"></div>
           <div className="cute-highlight bottom"></div>
           
+          {/* 能量注入冒泡效果 */}
+          <AnimatePresence>
+            {isBubbling && (
+              <div className="bubble-infusion-layer">
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="infusion-bubble"
+                    initial={{ bottom: '-10%', left: `${20 + Math.random() * 60}%`, opacity: 0, scale: 0.5 }}
+                    animate={{ 
+                      bottom: '90%', 
+                      opacity: [0, 0.8, 0],
+                      scale: [0.5, 1, 0.8],
+                      x: [0, (Math.random() - 0.5) * 20, 0]
+                    }}
+                    transition={{ 
+                      duration: 1 + Math.random() * 1, 
+                      repeat: Infinity,
+                      delay: i * 0.2
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </AnimatePresence>
+
           {/* 增加把手在玻璃杯体上的折射倒影 */}
           <div className="handle-glass-reflection"></div>
         </div>
