@@ -28,8 +28,8 @@ class SoundUtils {
   public async playBubbling() {
     try {
       await Haptics.impact({ style: ImpactStyle.Light });
-    } catch (e) {
-      // Ignore if not in native environment
+    } catch {
+      console.warn('Haptics failed to play bubbling impact');
     }
     this.init();
     if (!this.audioCtx) return;
