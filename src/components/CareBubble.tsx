@@ -37,30 +37,31 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
   const handlePop = useCallback(() => {
     if (phase !== 'idle') return;
 
-    // 阶段 1: 膨胀->缩小->膨胀 (600ms)
+    // 阶段 1: 膨胀->缩小->膨胀 (800ms，稍微放缓，更优雅)
     setPhase('wobbling');
 
-    // 阶段 2: 爆裂碎片 (600ms 后触发)
+    // 阶段 2: 爆裂碎片 (800ms 后触发)
     setTimeout(() => {
       setPhase('burst');
 
-      // 生成 14 个碎片，飞散距离限制在屏幕内
-      const newShards: Shard[] = Array.from({ length: 14 }, (_, i) => ({
+      // 生成 24 个碎片 (原来是14个)，让破碎感更细腻
+      // 距离大幅减小，确保绝对不会飞出屏幕边界
+      const newShards: Shard[] = Array.from({ length: 24 }, (_, i) => ({
         id: i,
-        angle: (i * 25.7) + (Math.random() - 0.5) * 15,
-        distance: 60 + Math.random() * 60, // 限制飞散距离，避免溢出
-        size: 5 + Math.random() * 10,
+        angle: (i * 15) + (Math.random() - 0.5) * 10,
+        distance: 60 + Math.random() * 80, // 恢复并放大了飞散距离，因为容器已做了严格的溢出裁剪
+        size: 5 + Math.random() * 12, // 碎片变大一点，视觉冲击力更强
         color: SHARD_COLORS[i % SHARD_COLORS.length],
       }));
       setShards(newShards);
 
-      // 碎片动画结束后清理
+      // 碎片动画结束后清理 (延长至 1.2s，让碎片慢慢消失)
       setTimeout(() => {
         setPhase('idle');
         setShards([]);
         onPop();
-      }, 700);
-    }, 600);
+      }, 1200);
+    }, 800);
   }, [phase, onPop]);
 
   return (
@@ -91,7 +92,7 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
               }
               transition={
                 phase === 'wobbling'
-                  ? { duration: 0.6, times: [0, 0.3, 0.6, 1], ease: 'easeInOut' }
+                  ? { duration: 0.8, times: [0, 0.35, 0.65, 1], ease: 'easeInOut' } // 同步延长到 0.8s
                   : { type: 'spring', stiffness: 200, damping: 18, mass: 0.8 }
               }
               onClick={(e) => {
@@ -119,18 +120,18 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
                     animate={{
                       x: tx,
                       y: ty,
-                      scale: 0,
-                      opacity: 0,
+                      scale: 0, // 慢慢缩成0
+                      opacity: 0, // 慢慢变透明
                     }}
                     transition={{
-                      duration: 0.5 + Math.random() * 0.2,
+                      duration: 0.8 + Math.random() * 0.4, // 碎片飘散时间延长 (从 0.5-0.7 增加到 0.8-1.2)
                       ease: 'easeOut',
                     }}
                     style={{
                       width: shard.size,
                       height: shard.size,
                       background: shard.color,
-                      boxShadow: `0 0 8px ${shard.color}`,
+                      boxShadow: `0 0 10px ${shard.color}`, // 发光稍微增强一点
                     }}
                   />
                 );

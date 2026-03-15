@@ -1,5 +1,5 @@
 .care-bubble-overlay {
-  position: fixed;
+  position: absolute; /* Changed from fixed to absolute to obey .app-container overflow:hidden */
   inset: 0;
   z-index: 5000;
   display: flex;
@@ -150,7 +150,7 @@
 /* 爆裂碎片容器 */
 .bubble-shards-container {
   position: absolute;
-  bottom: 80px;
+  bottom: 180px; /* 调整到泡泡正中心 (80px padding + 100px 半径) */
   left: 50%;
   transform: translateX(-50%);
   width: 0;

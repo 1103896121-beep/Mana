@@ -1,7 +1,7 @@
 .stats-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   z-index: 3000;
@@ -11,16 +11,35 @@
   padding: 20px;
 }
 
+[data-theme='light'] .stats-overlay {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 .stats-modal {
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   border: 1px solid var(--glass-border);
-  padding: 32px;
+  border-radius: 36px;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
   gap: 32px;
+  background: rgba(20, 20, 22, 0.85); /* 深色磨砂黑 */
+  box-shadow: 
+    0 40px 100px rgba(0, 0, 0, 0.8), 
+    inset 0 0 40px rgba(255, 255, 255, 0.03),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] .stats-modal {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 40px 100px rgba(0, 0, 0, 0.15), 
+    inset 0 0 40px rgba(0, 0, 0, 0.02),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .stats-header {
@@ -33,76 +52,178 @@
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--color-white);
+  letter-spacing: -0.02em;
+}
+
+[data-theme='light'] .stats-header h2 {
+  color: #111;
 }
 
 .close-stats-btn {
   background: rgba(255, 255, 255, 0.1);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme='light'] .close-stats-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+
+.close-stats-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+[data-theme='light'] .close-stats-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .stats-summary-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 .summary-card {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  padding: 24px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='light'] .summary-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f8fb 100%);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+/* 增加细腻的光影感 */
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+  transform: rotate(-15deg);
+  pointer-events: none;
+}
+
+[data-theme='light'] .summary-card::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent);
 }
 
 .summary-label {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.85); /* 调亮字体 */
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap; /* 尽量不换行 */
+  z-index: 1;
+}
+
+[data-theme='light'] .summary-label {
+  color: rgba(0, 0, 0, 0.7);
 }
 
 .summary-value {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: var(--color-primary);
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  z-index: 1;
+}
+
+[data-theme='light'] .summary-value {
+  color: #007aff;
 }
 
 .summary-unit {
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--color-text-muted);
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 .chart-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='light'] .chart-section {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
 }
 
 .chart-section h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .bar-chart {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  height: 180px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--glass-border);
-  gap: 8px;
+  height: 110px; /* 降低圆柱体的整体身高 */
+  padding-bottom: 30px; /* 为日期标签留空间 */
+  gap: 10px;
+  position: relative;
+}
+
+/* 虚线背景基准线 */
+.bar-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(to right, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.1) 4px, transparent 4px, transparent 8px);
+}
+.bar-chart::after {
+  content: '';
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='light'] .bar-chart::before {
+  background: repeating-linear-gradient(to right, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 4px, transparent 4px, transparent 8px);
+}
+[data-theme='light'] .bar-chart::after {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .bar-container {
@@ -110,23 +231,141 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  height: 100%;
   justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+/* 隐形的 Hover 触发区域，方便点击和滑动 */
+.bar-hover-area {
+  position: absolute;
+  width: 140%;
+  height: 100%;
+  bottom: 30px;
+  z-index: 10;
+  cursor: pointer;
 }
 
 .bar {
   width: 100%;
-  min-height: 4px;
-  background: var(--color-primary);
-  border-radius: 4px 4px 0 0;
-  transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 24px;
+  min-height: 4px; /* 保证 0 时也有个底座 */
+  background: linear-gradient(to top, var(--color-primary), #64d2ff);
+  border-radius: 8px 8px 4px 4px;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: 1;
+}
+
+/* 今天的柱子高亮渐变 */
+.bar.today {
+  background: linear-gradient(to top, #ff9500, #ffcc00);
+  box-shadow: 0 0 15px rgba(255, 149, 0, 0.4);
+}
+
+[data-theme='light'] .bar {
+  background: linear-gradient(to top, #007aff, #64d2ff);
+}
+[data-theme='light'] .bar.today {
+  background: linear-gradient(to top, #ff9500, #ffcc00);
+}
+
+/* 内部高光条纹 */
+.bar::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 6px 6px 0 0;
+  pointer-events: none;
 }
 
 .bar-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-muted);
   position: absolute;
-  bottom: -20px;
+  bottom: -2px;
+  white-space: nowrap;
+}
+
+/* 当日标签高亮 */
+.bar-label.today {
+  color: #ff9500;
+  font-weight: 800;
+}
+
+/* Tooltip 样式 */
+.chart-tooltip {
+  position: absolute;
+  top: -48px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(30, 30, 32, 0.95);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1);
+  z-index: 20;
+}
+
+.chart-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(30, 30, 32, 0.95);
+}
+
+[data-theme='light'] .chart-tooltip {
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+[data-theme='light'] .chart-tooltip::after {
+  border-top-color: #ffffff;
+}
+
+.bar-container:hover .chart-tooltip,
+.bar-hover-area:active + .bar + .chart-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-val {
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  margin-right: 4px;
+}
+.tooltip-val.today {
+  color: #ff9500;
+}
+[data-theme='light'] .tooltip-val {
+  color: #007aff;
+}
+[data-theme='light'] .tooltip-val.today {
+  color: #ff9500;
+}
+
+/* Confirm btn custom inside modal */
+.stats-modal .confirm-add-btn {
+  background: rgba(255, 255, 255, 0.08); /* 稍微淡一点 */
+  border: 1px solid rgba(255, 255, 255, 0.05); /* 极细描边 */
+  box-shadow: none; /* 去除原本的巨大阴影 */
+}
+[data-theme='light'] .stats-modal .confirm-add-btn {
+  background: rgba(0, 0, 0, 0.85); /* 亮色模式下黑色按钮 */
+  color: white;
 }

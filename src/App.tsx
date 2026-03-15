@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Plus, Moon, Sun, Trash2, Languages } from 'lucide-react';
+import { Plus, Moon, Sun, Trash2, Languages, BarChart2 } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CoffeeCup from './components/CoffeeCup';
 import CareBubble from './components/CareBubble';
+import StatsModal from './components/StatsModal';
 import { useTranslation } from './hooks/useTranslation';
 import { CARE_PROMPTS } from './i18n/translations';
 import { soundUtils } from './utils/soundUtils';
@@ -17,6 +18,12 @@ interface Task {
   detail?: string;
 }
 
+interface DailyLog {
+  date: string;
+  minutes: number;
+  count: number;
+}
+
 type SortField = 'createdAt' | 'duration' | 'manual';
 type SortOrder = 'asc' | 'desc';
 
@@ -25,6 +32,7 @@ const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showInput, setShowInput] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDetail, setNewTaskDetail] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(30);
@@ -82,7 +90,29 @@ const App: React.FC = () => {
       minutes: totalFocusMinutes,
       count: completedCountToday
     }));
+
+    // Record daily log for stats history (simple implementation)
+    const today = new Date().toDateString();
+    const historyData = localStorage.getItem('mana_stats_history_v2');
+    let history: DailyLog[] = historyData ? JSON.parse(historyData) : [];
+    
+    const todayIndex = history.findIndex(h => h.date === today);
+    if (todayIndex >= 0) {
+      history[todayIndex] = { date: today, minutes: totalFocusMinutes, count: completedCountToday };
+    } else {
+      history.push({ date: today, minutes: totalFocusMinutes, count: completedCountToday });
+    }
+    
+    // Keep only last 14 days to prevent unbounded growth
+    if (history.length > 14) history = history.slice(-14);
+    localStorage.setItem('mana_stats_history_v2', JSON.stringify(history));
+
   }, [tasks, theme, totalFocusMinutes, completedCountToday]);
+
+  const getHistoryForStats = () => {
+    const historyData = localStorage.getItem('mana_stats_history_v2');
+    return historyData ? JSON.parse(historyData) : [];
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -246,9 +276,14 @@ const App: React.FC = () => {
         </div>
         <div className="task-list-header">
           <h2>{t('taskViewport.title')}</h2>
-          <button className={`add-task-btn ${showInput ? 'active' : ''}`} onClick={() => setShowInput(!showInput)}>
-            <Plus size={36} />
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className={`add-task-btn stats-trigger-header ${showStats ? 'active' : ''}`} onClick={() => setShowStats(true)}>
+              <BarChart2 size={24} />
+            </button>
+            <button className={`add-task-btn ${showInput ? 'active' : ''}`} onClick={() => setShowInput(!showInput)}>
+              <Plus size={36} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -318,6 +353,13 @@ const App: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StatsModal 
+        isOpen={showStats} 
+        onClose={() => setShowStats(false)} 
+        history={getHistoryForStats()} 
+        totalMinutesEver={getHistoryForStats().reduce((acc: number, curr: DailyLog) => acc + curr.minutes, 0)} 
+      />
     </div>
   );
 };

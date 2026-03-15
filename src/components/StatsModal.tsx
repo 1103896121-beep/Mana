@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, BarChart2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { X, BarChart2, Flame } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import './StatsModal.css';
 
@@ -17,9 +17,40 @@ interface StatsModalProps {
   totalMinutesEver: number;
 }
 
+// 动画数字组件 (从0滚动到目标值)
+const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
+  const springValue = useSpring(0, { stiffness: 60, damping: 15 });
+  const displayValue = useTransform(springValue, (latest) => Math.round(latest));
+
+  useEffect(() => {
+    springValue.set(value);
+  }, [value, springValue]);
+
+  return <motion.span>{displayValue}</motion.span>;
+};
+
 const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, totalMinutesEver }) => {
-  const { t } = useTranslation();
-  const maxMins = Math.max(...history.map(h => h.minutes), 60);
+  const { t, language } = useTranslation();
+  
+  // 确保图表有7天的数据（哪怕某天是0）
+  const paddedHistory = React.useMemo(() => {
+    const sorted = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // 简化处理：实际项目可能需要生成连续日历。目前假如有数据则用数据，否则这里为了简便直接依赖App传来的过滤。
+    // 为了美观，至少保证渲染出7根柱子，如果没有7天数据，在前面补空日志
+    const result = [...sorted];
+    while (result.length < 7) {
+      result.unshift({ date: `-(pad${result.length})-`, minutes: 0, count: 0 });
+    }
+    return result.slice(-7); // 只取最近7天
+  }, [history]);
+
+  const maxMins = Math.max(...paddedHistory.map(h => h.minutes), 60);
+  const avg7Days = Math.round(paddedHistory.reduce((a, b) => a + b.minutes, 0) / 7);
+
+  // 分析最强一天
+  const bestDay = [...paddedHistory].sort((a, b) => b.minutes - a.minutes)[0];
+
+  const todayStr = new Date().toDateString();
 
   return (
     <AnimatePresence>
@@ -29,13 +60,15 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={onClose}
         >
           <motion.div 
-            className="stats-modal glass-panel elevated"
-            initial={{ scale: 0.9, y: 30 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 30 }}
+            className="stats-modal"
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
           >
             <div className="stats-header">
@@ -49,42 +82,63 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
               <div className="summary-card">
                 <span className="summary-label">{t('stats.totalEver')}</span>
                 <div className="summary-value">
-                  {totalMinutesEver}<span className="summary-unit">{t('header.mins')}</span>
+                  <AnimatedNumber value={totalMinutesEver} />
+                  <span className="summary-unit">{t('header.mins')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-label">{t('stats.avg7Days')}</span>
                 <div className="summary-value">
-                  {Math.round(history.reduce((a, b) => a + b.minutes, 0) / 7)}<span className="summary-unit">{t('header.mins')}</span>
+                  <AnimatedNumber value={avg7Days} />
+                  <span className="summary-unit">{t('header.mins')}</span>
                 </div>
               </div>
             </div>
 
             <div className="chart-section">
-              <h3><BarChart2 size={16} /> {t('stats.last7Days')}</h3>
+              <h3><BarChart2 size={18} /> {t('stats.last7Days')}</h3>
               <div className="bar-chart">
-                {history.map((day, i) => (
-                  <div key={day.date} className="bar-container" style={{ position: 'relative' }}>
-                    <motion.div 
-                      className="bar"
-                      initial={{ height: 0 }}
-                      animate={{ height: `${(day.minutes / maxMins) * 100}%` }}
-                      style={{ 
-                        background: i === history.length - 1 ? 'var(--color-accent)' : 'var(--color-primary)',
-                        opacity: i === history.length - 1 ? 1 : 0.6
-                      }}
-                    />
-                    <span className="bar-label">{day.date.split('-').slice(1).join('/')}</span>
-                  </div>
-                ))}
+                {paddedHistory.map((day, i) => {
+                  const isToday = day.date === todayStr;
+                  const label = day.date.includes('pad') ? '' : day.date.split('-').slice(1).join('/');
+                  
+                  return (
+                    <div key={`${day.date}-${i}`} className="bar-container">
+                      <div className="bar-hover-area" />
+                      
+                      {/* 高级柱体：基础高度加上动态高度 */}
+                      <motion.div 
+                        className={`bar ${isToday ? 'today' : ''}`}
+                        initial={{ height: '4px' }}
+                        animate={{ height: `max(4px, ${(day.minutes / maxMins) * 100}%)` }}
+                        transition={{ duration: 1, delay: i * 0.05, ease: "easeOut" }}
+                      />
+                      
+                      <span className={`bar-label ${isToday ? 'today' : ''}`}>{label}</span>
+
+                      {/* Tooltip 悬浮或点击触发展示 */}
+                      {day.minutes > 0 && (
+                        <div className="chart-tooltip">
+                           <span className={`tooltip-val ${isToday ? 'today' : ''}`}>{day.minutes}</span>
+                           m ({day.count} tasks)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+              
+              {bestDay && bestDay.minutes > 0 && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '-10px' }}>
+                  <Flame size={14} color="#ff9500" />
+                  {language === 'zh' ? `最强的一天是 ${bestDay.date.split('-').slice(1).join('/')}，专注了 ${bestDay.minutes} 分钟！` : `Your best day was ${bestDay.date.split('-').slice(1).join('/')} with ${bestDay.minutes} mins!`}
+                </div>
+              )}
             </div>
 
-            <div className="stats-header" style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
-               <button className="confirm-add-btn" onClick={onClose} style={{ width: '100%' }}>
-                  {t('stats.close')}
-               </button>
-            </div>
+            <button className="confirm-add-btn" onClick={onClose}>
+              {t('stats.close')}
+            </button>
           </motion.div>
         </motion.div>
       )}

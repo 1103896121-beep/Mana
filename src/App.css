@@ -167,6 +167,7 @@
   flex-direction: column;
   gap: var(--spacing-lg);
   overflow-y: auto;
+  scrollbar-gutter: stable; /* Fixes layout shift on desktop when scrollbar appears/disappears */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -185,9 +186,9 @@
 }
 
 .add-task-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  width: 54px; /* Slightly reduced for two buttons */
+  height: 54px;
+  border-radius: 27px;
   border: none;
   background: var(--color-primary);
   color: white;
@@ -199,10 +200,25 @@
   box-shadow: 0 6px 15px rgba(6, 182, 212, 0.3);
 }
 
-.add-task-btn.active {
+.add-task-btn.stats-trigger-header {
   background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+[data-theme='light'] .add-task-btn.stats-trigger-header {
+  background: #f0f0f0;
+  border-color: rgba(0, 0, 0, 0.05);
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.add-task-btn.active {
+  background: rgba(255, 255, 255, 0.2);
   color: white;
   box-shadow: none;
+}
+[data-theme='light'] .add-task-btn.stats-trigger-header.active {
+  background: #e0e0e0;
 }
 
 .quick-add-panel {

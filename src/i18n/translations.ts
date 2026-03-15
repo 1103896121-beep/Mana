@@ -32,11 +32,11 @@ export const translations = {
       critical: "Critical",
     },
     stats: {
-      title: "Energy Analytics",
-      totalEver: "All-time focus:",
+      title: "History Statistics",
+      totalEver: "Cumulative Focus Time",
       last7Days: "Last 7 Days Trend",
       close: "Close",
-      avg7Days: "7-Day Avg",
+      avg7Days: "7-Day Average",
     }
   },
   zh: {
@@ -71,8 +71,8 @@ export const translations = {
       critical: "危急",
     },
     stats: {
-      title: "能量统计",
-      totalEver: "累计专注时长：",
+      title: "历史统计",
+      totalEver: "累计专注时长",
       last7Days: "过去7天趋势",
       close: "关闭",
       avg7Days: "7日平均",
