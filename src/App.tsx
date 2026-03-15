@@ -58,9 +58,20 @@ const App: React.FC = () => {
   useEffect(() => {
     document.body.dataset.theme = theme;
     
+    // 初始化或获取匿名设备 ID (用于未来后台数据合并)
+    let deviceId = localStorage.getItem('mana_device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('mana_device_id', deviceId);
+      console.log('🆕 Generated new anonymous device ID:', deviceId);
+    } else {
+      console.log('🔗 Running with existing device ID:', deviceId);
+    }
+    
     const today = new Date().toDateString();
     const lastActiveDate = localStorage.getItem('mana_last_active_date');
     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (lastActiveDate !== today) {
       setTotalFocusMinutes(0);
       setCompletedCountToday(0);
@@ -106,7 +117,7 @@ const App: React.FC = () => {
     // Keep only last 14 days to prevent unbounded growth
     if (history.length > 14) history = history.slice(-14);
     localStorage.setItem('mana_stats_history_v2', JSON.stringify(history));
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks, theme, totalFocusMinutes, completedCountToday]);
 
   const getHistoryForStats = () => {
