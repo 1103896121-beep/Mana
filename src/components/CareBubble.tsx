@@ -14,6 +14,7 @@ interface Shard {
   distance: number;
   size: number;
   color: string;
+  duration: number;
 }
 
 const SHARD_COLORS = [
@@ -36,32 +37,31 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
 
   const handlePop = useCallback(() => {
     if (phase !== 'idle') return;
-
-    // 阶段 1: 膨胀->缩小->膨胀 (800ms，稍微放缓，更优雅)
     setPhase('wobbling');
+  }, [phase]);
 
-    // 阶段 2: 爆裂碎片 (800ms 后触发)
+  const handleWobbleComplete = useCallback(() => {
+    if (phase !== 'wobbling') return;
+    
+    setPhase('burst');
+    // 生成 24 个碎片 (原来是14个)，让破碎感更细腻
+    // 距离大幅减小，确保绝对不会飞出屏幕边界
+    const newShards: Shard[] = Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      angle: (i * 15) + (Math.random() - 0.5) * 10,
+      distance: 60 + Math.random() * 80, // 恢复并放大了飞散距离，因为容器已做了严格的溢出裁剪
+      size: 5 + Math.random() * 12, // 碎片变大一点，视觉冲击力更强
+      color: SHARD_COLORS[i % SHARD_COLORS.length],
+      duration: 0.8 + Math.random() * 0.4, // 将随机时长放在渲染外计算
+    }));
+    setShards(newShards);
+
+    // 碎片动画结束后清理 (延长至 1.2s，让碎片慢慢消失)
     setTimeout(() => {
-      setPhase('burst');
-
-      // 生成 24 个碎片 (原来是14个)，让破碎感更细腻
-      // 距离大幅减小，确保绝对不会飞出屏幕边界
-      const newShards: Shard[] = Array.from({ length: 24 }, (_, i) => ({
-        id: i,
-        angle: (i * 15) + (Math.random() - 0.5) * 10,
-        distance: 60 + Math.random() * 80, // 恢复并放大了飞散距离，因为容器已做了严格的溢出裁剪
-        size: 5 + Math.random() * 12, // 碎片变大一点，视觉冲击力更强
-        color: SHARD_COLORS[i % SHARD_COLORS.length],
-      }));
-      setShards(newShards);
-
-      // 碎片动画结束后清理 (延长至 1.2s，让碎片慢慢消失)
-      setTimeout(() => {
-        setPhase('idle');
-        setShards([]);
-        onPop();
-      }, 1200);
-    }, 800);
+      setPhase('idle');
+      setShards([]);
+      onPop();
+    }, 1200);
   }, [phase, onPop]);
 
   return (
@@ -95,6 +95,11 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
                   ? { duration: 0.8, times: [0, 0.35, 0.65, 1], ease: 'easeInOut' } // 同步延长到 0.8s
                   : { type: 'spring', stiffness: 200, damping: 18, mass: 0.8 }
               }
+              onAnimationComplete={() => {
+                if (phase === 'wobbling') {
+                  handleWobbleComplete();
+                }
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 handlePop();
@@ -124,7 +129,7 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
                       opacity: 0, // 慢慢变透明
                     }}
                     transition={{
-                      duration: 0.8 + Math.random() * 0.4, // 碎片飘散时间延长 (从 0.5-0.7 增加到 0.8-1.2)
+                      duration: shard.duration, // 碎片飘散时间延长 (从 0.5-0.7 增加到 0.8-1.2)
                       ease: 'easeOut',
                     }}
                     style={{

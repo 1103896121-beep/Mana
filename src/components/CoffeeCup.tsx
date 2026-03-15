@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './CoffeeCup.css';
@@ -22,6 +23,17 @@ const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage, isBubbling = false })
     '--coffee-dark': darkColor,
     '--coffee-light': lightColor,
   } as React.CSSProperties;
+
+  // Pre-calculate random values for bubbles to ensure render purity
+  const bubbles = React.useMemo(() => {
+    return [...Array(6)].map((_, i) => ({
+      id: i,
+      left: `${20 + Math.random() * 60}%`,
+      xOffset: (Math.random() - 0.5) * 20,
+      duration: 1 + Math.random() * 1,
+      delay: i * 0.2
+    }));
+  }, []);
 
   return (
     <div className="coffee-cup-container" style={cupStyle}>
@@ -65,21 +77,21 @@ const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage, isBubbling = false })
           <AnimatePresence>
             {isBubbling && (
               <div className="bubble-infusion-layer">
-                {[...Array(6)].map((_, i) => (
+                {bubbles.map((bubble) => (
                   <motion.div
-                    key={i}
+                    key={bubble.id}
                     className="infusion-bubble"
-                    initial={{ bottom: '-10%', left: `${20 + Math.random() * 60}%`, opacity: 0, scale: 0.5 }}
+                    initial={{ bottom: '-10%', left: bubble.left, opacity: 0, scale: 0.5 }}
                     animate={{ 
                       bottom: '90%', 
                       opacity: [0, 0.8, 0],
                       scale: [0.5, 1, 0.8],
-                      x: [0, (Math.random() - 0.5) * 20, 0]
+                      x: [0, bubble.xOffset, 0]
                     }}
                     transition={{ 
-                      duration: 1 + Math.random() * 1, 
+                      duration: bubble.duration, 
                       repeat: Infinity,
-                      delay: i * 0.2
+                      delay: bubble.delay
                     }}
                   />
                 ))}

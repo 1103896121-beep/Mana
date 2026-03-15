@@ -26,17 +26,17 @@ export const useTranslation = () => {
 
   const t = (path: string) => {
     const keys = path.split('.');
-    let current: any = translations[language];
+    let current: Record<string, unknown> | string | undefined = translations[language] as unknown as Record<string, unknown>;
     
     for (const key of keys) {
-      if (!current || current[key] === undefined) {
+      if (!current || typeof current !== 'object' || current[key] === undefined) {
         console.warn(`Translation path not found: ${path}`);
         return path;
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown> | string;
     }
     
-    return current;
+    return current as unknown as string;
   };
 
   return { t, language, setLanguage };

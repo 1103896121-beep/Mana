@@ -30,7 +30,10 @@ type SortOrder = 'asc' | 'desc';
 const App: React.FC = () => {
   const { t, language, setLanguage } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const savedTheme = localStorage.getItem('mana_theme') as 'dark' | 'light';
+    return savedTheme || 'dark';
+  });
   const [showInput, setShowInput] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
@@ -51,13 +54,10 @@ const App: React.FC = () => {
   const lastDeepFocusTriggerRef = useRef<number>(0);
 
   // 初始化与重置逻辑
+   
   useEffect(() => {
-    const savedTheme = localStorage.getItem('mana_theme');
-    if (savedTheme) {
-      setTheme(savedTheme as 'dark' | 'light');
-      document.body.dataset.theme = savedTheme;
-    }
-
+    document.body.dataset.theme = theme;
+    
     const today = new Date().toDateString();
     const lastActiveDate = localStorage.getItem('mana_last_active_date');
     
@@ -206,9 +206,9 @@ const App: React.FC = () => {
   const injectTestData = () => {
     const now = Date.now();
     const mockTasks: Task[] = [
-      { id: crypto.randomUUID(), text: 'Meditate (Mock)', detail: 'Morning focus', duration: 15, createdAt: now - 3600000 },
-      { id: crypto.randomUUID(), text: 'Deep Work (Mock)', detail: 'Coding Mana', duration: 90, createdAt: now - 86400000 },
-      { id: crypto.randomUUID(), text: 'Read Book (Old)', detail: 'Clear expired test', duration: 30, createdAt: now - 8 * 86400000 },
+      { id: `mock-${now}-1`, text: 'Meditate (Mock)', detail: 'Morning focus', duration: 15, createdAt: now - 3600000 },
+      { id: `mock-${now}-2`, text: 'Deep Work (Mock)', detail: 'Coding Mana', duration: 90, createdAt: now - 86400000 },
+      { id: `mock-${now}-3`, text: 'Read Book (Old)', detail: 'Clear expired test', duration: 30, createdAt: now - 8 * 86400000 },
     ];
     setTasks([...mockTasks, ...tasks]);
   };
