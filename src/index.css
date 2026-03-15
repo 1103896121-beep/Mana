@@ -167,8 +167,8 @@ body {
     align-items: flex-start;
   }
   .app-container {
-    height: 100vh;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
     border: none;
     margin: 0;

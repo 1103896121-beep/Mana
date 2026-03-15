@@ -37,6 +37,12 @@ export const translations = {
       last7Days: "Last 7 Days Trend",
       close: "Close",
       avg7Days: "7-Day Average",
+    },
+    about: {
+      title: "About Mana",
+      privacyTitle: "Privacy Policy",
+      privacyText: "Mana promises that all your focus data and anonymous preferences are securely stored locally on this device. There is no unauthorized cloud synchronization or data collection. Your privacy is absolutely protected.",
+      close: "Close"
     }
   },
   zh: {
@@ -76,6 +82,12 @@ export const translations = {
       last7Days: "过去7天趋势",
       close: "关闭",
       avg7Days: "7日平均",
+    },
+    about: {
+      title: "关于 Mana",
+      privacyTitle: "隐私协议",
+      privacyText: "Mana 承诺您的所有专注数据和匿名偏好完全加密存储在本机，绝无任何未经授权的云端同步或暗中收集隐私的行为。",
+      close: "确认返回"
     }
   }
 };

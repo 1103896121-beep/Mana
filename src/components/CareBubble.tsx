@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { soundUtils } from '../utils/soundUtils';
 import './CareBubble.css';
 
 interface CareBubbleProps {
@@ -44,6 +45,9 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
     if (phase !== 'wobbling') return;
     
     setPhase('burst');
+    // 触发解压震动
+    soundUtils.playPop();
+    
     // 生成 24 个碎片 (原来是14个)，让破碎感更细腻
     // 距离大幅减小，确保绝对不会飞出屏幕边界
     const newShards: Shard[] = Array.from({ length: 24 }, (_, i) => ({

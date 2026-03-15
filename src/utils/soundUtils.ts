@@ -1,3 +1,5 @@
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
 class SoundUtils {
   private audioCtx: AudioContext | null = null;
 
@@ -22,8 +24,13 @@ class SoundUtils {
     // Silent for task creation
   }
 
-  // 咕咚咕咚冒泡声 (模拟能量注入)
-  public playBubbling() {
+  // 咕咚咕咚冒泡声 (模拟能量注入) + 触觉反馈
+  public async playBubbling() {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Light });
+    } catch (e) {
+      // Ignore if not in native environment
+    }
     this.init();
     if (!this.audioCtx) return;
     
@@ -64,6 +71,15 @@ class SoundUtils {
 
   public playDelete() {
     // Keep silent for deletion
+  }
+
+  public async playPop() {
+    try {
+      // 爆裂时的中型解压反馈
+      await Haptics.impact({ style: ImpactStyle.Medium });
+    } catch (e) {
+      // Ignore
+    }
   }
 }
 

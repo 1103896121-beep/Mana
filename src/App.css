@@ -2,7 +2,7 @@
 }
 
 .mana-header {
-  padding: 40px 24px 20px 24px;
+  padding: calc(40px + env(safe-area-inset-top, 0px)) 24px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -494,7 +494,7 @@
 .bubble-list-container {
   display: flex;
   flex-direction: column;
-  padding-bottom: 120px;
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
   padding-top: 20px;
   gap: 16px;
   width: 100%; /* 确保填满 */

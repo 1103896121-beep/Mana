@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { Plus, Moon, Sun, Trash2, Languages, BarChart2 } from 'lucide-react';
+import { Plus, Moon, Sun, Trash2, Languages, BarChart2, Info } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
 import CoffeeCup from './components/CoffeeCup';
 import CareBubble from './components/CareBubble';
@@ -36,6 +36,7 @@ const App: React.FC = () => {
   });
   const [showInput, setShowInput] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDetail, setNewTaskDetail] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(30);
@@ -280,6 +281,9 @@ const App: React.FC = () => {
             <button className="language-toggle action-icon-btn utility-btn" onClick={toggleLanguage}>
               <Languages size={20} />
             </button>
+            <button className="theme-toggle action-icon-btn utility-btn" onClick={() => setShowAbout(true)} title="About Policy">
+              <Info size={20} />
+            </button>
             <button className="theme-toggle action-icon-btn utility-btn" onClick={toggleTheme}>
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -365,7 +369,24 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <StatsModal 
+      <AnimatePresence>
+        {showAbout && (
+          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAbout(false)} style={{ zIndex: 3000 }}>
+            <motion.div className="confirm-modal glass-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
+              <h3>{t('about.title')}</h3>
+              <div style={{ textAlign: 'left', marginTop: '8px', marginBottom: '16px' }}>
+                <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontSize: '1rem' }}>{t('about.privacyTitle')}</h4>
+                <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: 'var(--color-text-muted)', textAlign: 'left', margin: 0 }}>{t('about.privacyText')}</p>
+              </div>
+              <div className="confirm-actions">
+                <button className="cancel-btn" style={{ width: '100%', flex: 'none' }} onClick={() => setShowAbout(false)}>{t('about.close')}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <StatsModal  
         isOpen={showStats} 
         onClose={() => setShowStats(false)} 
         history={getHistoryForStats()} 
