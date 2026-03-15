@@ -410,8 +410,58 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   letter-spacing: 0.05em;
+}
+
+/* Tip Jar Styles */
+.tip-jar-section {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 16px;
+  margin-top: 16px;
+  border: var(--glass-border);
+}
+
+.tip-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tip-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-main);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tip-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.tip-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tip-btn span {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.tip-btn.premium span {
+  color: #ffcc00; /* Gold for lunch */
 }
 
 .confirm-add-btn:hover {

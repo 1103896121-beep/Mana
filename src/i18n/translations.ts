@@ -43,6 +43,17 @@ export const translations = {
       privacyTitle: "Privacy Policy",
       privacyText: "Mana promises that all your focus data and anonymous preferences are securely stored locally on this device. There is no unauthorized cloud synchronization or data collection. Your privacy is absolutely protected.",
       close: "Close"
+    },
+    tipJar: {
+      title: "Support Mana",
+      coffee: "Buy me a coffee",
+      lunch: "Sponsor a lunch",
+      coffeePrice: "$0.99",
+      lunchPrice: "$4.99",
+      desc: "Mana is developed by a single person and contains no ads or subscriptions. If this app helps you find your focus, consider leaving a small tip to keep the servers and caffeine running. 💙",
+      purchasing: "Purchasing...",
+      success: "Thank you for your support!",
+      error: "Purchase failed or was canceled."
     }
   },
   zh: {
@@ -88,6 +99,17 @@ export const translations = {
       privacyTitle: "隐私协议",
       privacyText: "Mana 承诺您的所有专注数据和匿名偏好完全加密存储在本机，绝无任何未经授权的云端同步或暗中收集隐私的行为。",
       close: "确认返回"
+    },
+    tipJar: {
+      title: "支持独立开发",
+      coffee: "请开发者喝杯咖啡",
+      lunch: "赞助一顿午餐",
+      coffeePrice: "¥6.00",
+      lunchPrice: "¥30.00",
+      desc: "Mana 由独立开发者用爱发电，承诺永远无广告、无强制订阅。如果这款应用帮您找回了内心的平静与专注，一次微小的打赏就是对我最大的鼓励。💙",
+      purchasing: "正在连接 App Store...",
+      success: "感谢您的慷慨支持！",
+      error: "支付已取消或遇到网络错误。"
     }
   }
 };

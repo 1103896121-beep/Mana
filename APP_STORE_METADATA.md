@@ -1,7 +1,8 @@
 # Mana - App Store 上架文案 (App Store Connect Metadata)
 
-## 1. 核心显示信息 (Core Display Information)
+## 1. 核心显示信息 & 定价属性 (Display Info & Pricing)
 
+*   **基础定价 (App Price)**: `$2.99` / `￥18.00` (一次性买断下载)
 *   **App 名称 (App Name)**: `Mana - 极简专注与能量待办` *(上限 30 字符)*
 *   **副标题 (Subtitle)**: `沉浸式时间管理，将任务化为能量` *(上限 30 字符)*
 *   **宣传文本 (Promotional Text)**: `体验深色美学与物理级解压震感。Mana 拒绝臃肿，用最纯粹的方式重塑你的日常专注力。` *(最多 170 字符)*
@@ -9,8 +10,14 @@
 ## 2. 搜索关键词 (Keywords)
 *注意：用半角逗号隔开，不要有空格，总计不能超过 100 字符。*
 > `专注,待办,效率,番茄钟,时间管理,极简,打卡,习惯,自律,解压,能量,任务清单,白噪音,规划,todolist`
+## 3. 应用内购买 (In-App Purchases - 纯打赏机制)
+*这部分是在开发者后台配置的“消耗型”项目 (Consumable)，无需我们有服务器后台。*
+*   **打赏项目 1**: `Buy me a coffee` (请喝杯咖啡☕) - 定价 `$0.99` / `￥6.00`
+*   **打赏项目 2**: `Lunch for the Developer` (赞助一顿午餐🍔) - 定价 `$4.99` / `￥30.00`
 
-## 3. 应用描述 (Description - Simplified Chinese)
+---
+
+## 4. 应用描述 (Description - Simplified Chinese)
 
 **【 应用简介 】**
 你的时间去哪儿了？让我们从今天的一个小目标开始找回它。

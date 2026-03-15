@@ -2,12 +2,13 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Plus, Moon, Sun, Trash2, Languages, BarChart2, Info } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
-import CoffeeCup from './components/CoffeeCup';
-import CareBubble from './components/CareBubble';
+import { BatteryComponent } from './components/BatteryComponent';
+import { CareBubble } from './components/CareBubble';
 import StatsModal from './components/StatsModal';
 import { useTranslation } from './hooks/useTranslation';
 import { CARE_PROMPTS } from './i18n/translations';
-import { soundUtils } from './utils/soundUtils';
+import soundUtils from './utils/soundUtils';
+import iapUtils, { IAP_IDS } from './utils/iapUtils';
 import './App.css';
 
 interface Task {
@@ -45,10 +46,11 @@ const App: React.FC = () => {
   const [completedCountToday, setCompletedCountToday] = useState(0);
   const [coffeeLevel, setCoffeeLevel] = useState(0);
   const [careMessage, setCareMessage] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<{ type: 'single', id: string } | { type: 'expired' } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: 'single', id: string } | { type: 'clear' } | null>(null);
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [isBubbling, setIsBubbling] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   // 记录完成时间戳，用于检测 30 分钟内连续 3 条的 intensity 触发
   const completionTimestampsRef = useRef<number[]>([]);
   // 记录上次触发 deepFocus 时的分钟数，避免重复触发
@@ -378,8 +380,42 @@ const App: React.FC = () => {
                 <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontSize: '1rem' }}>{t('about.privacyTitle')}</h4>
                 <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: 'var(--color-text-muted)', textAlign: 'left', margin: 0 }}>{t('about.privacyText')}</p>
               </div>
-              <div className="confirm-actions">
-                <button className="cancel-btn" style={{ width: '100%', flex: 'none' }} onClick={() => setShowAbout(false)}>{t('about.close')}</button>
+
+              {/* 打赏区域 Tip Jar */}
+              <div className="tip-jar-section">
+                <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontSize: '1rem' }}>{t('tipJar.title')}</h4>
+                <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: 'var(--color-text-muted)', marginBottom: '16px', textAlign: 'left' }}>{t('tipJar.desc')}</p>
+                <div className="tip-buttons">
+                  <button 
+                    className="tip-btn" 
+                    disabled={isPurchasing}
+                    onClick={async () => {
+                      setIsPurchasing(true);
+                      const success = await iapUtils.purchase(IAP_IDS.coffee);
+                      setIsPurchasing(false);
+                      if (success) alert(t('tipJar.success'));
+                    }}
+                  >
+                    ☕ {t('tipJar.coffee')} <span>{t('tipJar.coffeePrice')}</span>
+                  </button>
+                  <button 
+                    className="tip-btn premium" 
+                    disabled={isPurchasing}
+                    onClick={async () => {
+                      setIsPurchasing(true);
+                      const success = await iapUtils.purchase(IAP_IDS.lunch);
+                      setIsPurchasing(false);
+                      if (success) alert(t('tipJar.success'));
+                    }}
+                  >
+                    🍔 {t('tipJar.lunch')} <span>{t('tipJar.lunchPrice')}</span>
+                  </button>
+                </div>
+                {isPurchasing && <p style={{ fontSize: '0.8rem', color: 'var(--color-accent)', marginTop: '8px' }}>{t('tipJar.purchasing')}</p>}
+              </div>
+
+              <div className="confirm-actions" style={{ marginTop: '20px' }}>
+                <button className="cancel-btn" style={{ width: '100%', flex: 'none' }} disabled={isPurchasing} onClick={() => setShowAbout(false)}>{t('about.close')}</button>
               </div>
             </motion.div>
           </motion.div>
