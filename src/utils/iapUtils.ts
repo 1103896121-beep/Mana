@@ -1,5 +1,4 @@
 import { Capacitor } from '@capacitor/core';
-import 'cordova-plugin-purchase';
 
 export const IAP_IDS = {
   coffee: 'com.david.mana.tip.coffee',

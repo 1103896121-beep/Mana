@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Plus, Moon, Sun, Trash2, Languages, BarChart2, Info } from 'lucide-react';
 import TaskBubble from './components/TaskBubble';
-import { BatteryComponent } from './components/BatteryComponent';
-import { CareBubble } from './components/CareBubble';
+import CoffeeCup from './components/CoffeeCup';
+import CareBubble from './components/CareBubble';
 import StatsModal from './components/StatsModal';
 import { useTranslation } from './hooks/useTranslation';
 import { CARE_PROMPTS } from './i18n/translations';
@@ -156,7 +156,7 @@ const App: React.FC = () => {
   };
 
   const clearExpiredTasks = () => {
-    setConfirmAction({ type: 'expired' });
+    setConfirmAction({ type: 'clear' });
   };
 
   const handleComplete = (id: string, duration: number) => {
@@ -235,7 +235,7 @@ const App: React.FC = () => {
     if (!confirmAction) return;
     if (confirmAction.type === 'single') {
       setTasks(prev => prev.filter(t => t.id !== confirmAction.id));
-    } else if (confirmAction.type === 'expired') {
+    } else if (confirmAction.type === 'clear') {
       const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
       const now = Date.now();
       setTasks(prev => prev.filter(t => now - t.createdAt < SEVEN_DAYS_MS));
