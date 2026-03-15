@@ -4,6 +4,7 @@ export const translations = {
     header: {
       todayEnergy: "TODAY ENERGY",
       mins: "mins",
+      minShort: "m",
       completed: "Completed",
     },
     taskViewport: {
@@ -15,6 +16,8 @@ export const translations = {
       focusTime: "Estimated Duration",
       establishBtn: "Submit",
       emptyState: "No active tasks. Add one above.",
+      extractEnergy: "Extract Energy",
+      dissolve: "Dissolve",
     },
     controls: {
       time: "Time",
@@ -25,6 +28,15 @@ export const translations = {
     carePrompt: {
       default: '"The flow of time begins with a single task."',
       overwork: "You've worked too hard today. Please take a break. 🛑",
+      tapToPop: "tap to pop",
+    },
+    common: {
+      confirm: "Confirm",
+      cancel: "Cancel",
+      clear: "Clear",
+      dissolve: "Dissolve",
+      confirmDelete: "Confirm Deletion",
+      clearExpired: "Clear Expired",
     },
     battery: {
       healthy: "Healthy",
@@ -37,6 +49,7 @@ export const translations = {
       last7Days: "Last 7 Days Trend",
       close: "Close",
       avg7Days: "7-Day Average",
+      bestDay: "Your best day was {{date}} with {{mins}} mins!",
     },
     about: {
       title: "About Mana",
@@ -60,6 +73,7 @@ export const translations = {
     header: {
       todayEnergy: "今日能量",
       mins: "分钟",
+      minShort: "分",
       completed: "已完成",
     },
     taskViewport: {
@@ -71,6 +85,8 @@ export const translations = {
       focusTime: "预计时长",
       establishBtn: "提交",
       emptyState: "暂无活跃任务。在上方添加一个吧。",
+      extractEnergy: "提取能量",
+      dissolve: "消解气泡",
     },
     controls: {
       time: "时间",
@@ -81,6 +97,15 @@ export const translations = {
     carePrompt: {
       default: '「时间的流动始于一个单一的任务。」',
       overwork: "你今天已经非常努力了，请注意劳逸结合。🛑",
+      tapToPop: "点击爆破",
+    },
+    common: {
+      confirm: "确认",
+      cancel: "取消",
+      clear: "清理",
+      dissolve: "溶解",
+      confirmDelete: "确认删除",
+      clearExpired: "清理过期任务",
     },
     battery: {
       healthy: "良好",

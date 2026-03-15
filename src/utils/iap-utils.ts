@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Capacitor } from '@capacitor/core';
 
 export const IAP_IDS = {
@@ -6,23 +5,69 @@ export const IAP_IDS = {
   lunch: 'com.david.mana.tip.lunch',
 };
 
+/**
+ * In-App Purchase 工具类
+ * 实现基于 cordova-plugin-purchase (v13+) 的 iOS 内购逻辑。
+ */
+interface CdvPurchaseTransaction {
+  verify: () => void;
+  finish: () => void;
+  id: string;
+}
+
+interface CdvPurchaseReceipt {
+  finish: () => void;
+}
+
+interface CdvPurchaseError {
+  code: number;
+  message: string;
+}
+
+interface CdvPurchaseProduct {
+  id: string;
+  type: string;
+  state: string;
+  title: string;
+  description: string;
+  price: string;
+}
+
+interface CdvPurchaseStore {
+  register: (products: Array<{ id: string; type: string; platform: string }>) => void;
+  when: () => {
+    approved: (cb: (transaction: CdvPurchaseTransaction) => void) => void;
+    verified: (cb: (receipt: CdvPurchaseReceipt) => void) => void;
+  };
+  error: (cb: (err: CdvPurchaseError) => void) => void;
+  ready: (cb: () => void) => void;
+  initialize: () => void;
+  get: (productId: string) => CdvPurchaseProduct | undefined;
+  requestPayment: (params: { id: string; platform: string }) => Promise<CdvPurchaseError | null>;
+}
+
 class IAPUtils {
-  private store: any = null;
+  private store: CdvPurchaseStore | null = null;
   public isReady = false;
 
-  public init() {
+  /**
+   * 初始化商店插件
+   * 仅在原生平台执行。
+   */
+  public init(): void {
     if (!Capacitor.isNativePlatform()) {
-      console.log('IAP: Not running on a native device (iOS/Android). Mocking store.');
+      // Mocking store for web/PWA
       return;
     }
     
     // Safety check for store availability
-    if (!(window as any).store) {
+    const globalStore = (window as unknown as { store: CdvPurchaseStore }).store;
+    if (!globalStore) {
       console.warn('IAP: Store plugin not available.');
       return;
     }
 
-    this.store = (window as any).store;
+    this.store = globalStore;
 
     // Register consumable products (CdvPurchase v13+)
     try {
@@ -40,23 +85,20 @@ class IAPUtils {
       ]);
 
       // Setup event listeners
-      this.store.when().approved((transaction: any) => {
-        console.log('IAP Approved:', transaction);
+      this.store.when().approved((transaction) => {
         transaction.verify(); // Starts receipt validation
       });
 
-      this.store.when().verified((receipt: any) => {
-        console.log('IAP Verified:', receipt);
+      this.store.when().verified((receipt) => {
         receipt.finish(); // Finish transaction to allow buying again
       });
 
       // Handle generic errors
-      this.store.error((err: any) => {
+      this.store.error((err) => {
         console.error('IAP Error: ' + JSON.stringify(err));
       });
 
       this.store.ready(() => {
-        console.log('IAP Store is ready and initialized.');
         this.isReady = true;
       });
 
@@ -67,6 +109,11 @@ class IAPUtils {
     }
   }
 
+  /**
+   * 发起内购
+   * @param productId 产品 ID (com.david.mana.tip.*)
+   * @returns 购买是否发起成功
+   */
   public async purchase(productId: string): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
       console.log(`IAP: Mocking purchase for ${productId} since this is the web/PWA mode.`);
@@ -89,15 +136,14 @@ class IAPUtils {
 
       return new Promise((resolve) => {
         // v13 simplified ordering
-        this.store.requestPayment({
+        this.store?.requestPayment({
           id: productId,
           platform: 'apple-appstore'
-        }).then((error: any) => {
+        }).then((error) => {
           if (error) {
             console.error('IAP requestPayment failed:', error);
             resolve(false);
           } else {
-            // Assume success if no error is thrown instantly (in a real app, track the transaction state)
             resolve(true); 
           }
         }).catch(() => {

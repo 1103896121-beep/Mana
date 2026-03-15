@@ -1,9 +1,27 @@
 import os
+import logging
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from typing import Optional
 
-def generate_system_design():
+# 配置日志规范
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def generate_system_design(output_path: Optional[str] = None) -> str:
+    """
+    生成家教平台系统功能设计方案。
+    
+    Args:
+        output_path: 报告保存路径。
+        
+    Returns:
+        保存的文件路径。
+    """
     doc = Document()
     
     # 标题
@@ -105,9 +123,20 @@ def generate_system_design():
     doc.add_paragraph('Beta 阶段：引入“课程包”与“担保支付”闭环。', style='Normal')
     doc.add_paragraph('正式运营：引入 AI 智能推荐算法与全方位的合规审核。', style='Normal')
 
-    output_path = r'E:\workrooten\myself\家教平台系统功能设计方案.docx'
-    doc.save(output_path)
-    print(f"Design document generated at: {output_path}")
+    # 路径解耦
+    if not output_path:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(base_dir, 'reports')
+    else:
+        output_dir = os.path.dirname(output_path)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        
+    final_path = output_path or os.path.join(output_dir, '家教平台系统功能设计方案.docx')
+    doc.save(final_path)
+    logger.info(f"Design document generated successfully at: {final_path}")
+    return final_path
 
 if __name__ == "__main__":
     generate_system_design()

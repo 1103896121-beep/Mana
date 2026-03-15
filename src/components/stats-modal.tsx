@@ -1,14 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import { X, BarChart2, Flame } from 'lucide-react';
-import { useTranslation } from '../hooks/useTranslation';
-import './StatsModal.css';
-
-interface DailyLog {
-  date: string;
-  minutes: number;
-  count: number;
-}
+import { useTranslation } from '../hooks/use-translation';
+import type { DailyLog } from '../hooks/use-mana';
+import './stats-modal.css';
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -29,8 +24,13 @@ const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
   return <motion.span>{displayValue}</motion.span>;
 };
 
+/**
+ * 统计分析弹窗组件
+ * 展示最近 7 天的专注趋势图表、累计时长及日均时长。
+ * 图表采用自适应高度的 motion.div 实现。
+ */
 const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, totalMinutesEver }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   
   // 确保图表有7天的数据（哪怕某天是0）
   const paddedHistory = React.useMemo(() => {
@@ -120,7 +120,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
                       {day.minutes > 0 && (
                         <div className="chart-tooltip">
                            <span className={`tooltip-val ${isToday ? 'today' : ''}`}>{day.minutes}</span>
-                           m ({day.count} tasks)
+                           {t('header.mins')} ({day.count} {t('header.completed')})
                         </div>
                       )}
                     </div>
@@ -131,7 +131,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
               {bestDay && bestDay.minutes > 0 && (
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '-10px' }}>
                   <Flame size={14} color="#ff9500" />
-                  {language === 'zh' ? `最强的一天是 ${bestDay.date.split('-').slice(1).join('/')}，专注了 ${bestDay.minutes} 分钟！` : `Your best day was ${bestDay.date.split('-').slice(1).join('/')} with ${bestDay.minutes} mins!`}
+                  {t('stats.bestDay').replace('{{date}}', bestDay.date.split('-').slice(1).join('/')).replace('{{mins}}', String(bestDay.minutes))}
                 </div>
               )}
             </div>

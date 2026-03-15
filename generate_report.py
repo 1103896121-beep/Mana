@@ -1,9 +1,27 @@
 import os
+import logging
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from typing import Optional
 
-def create_report():
+# 配置日志规范
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def create_report(output_path: Optional[str] = None) -> str:
+    """
+    创建家教平台项目可行性研究报告。
+    
+    Args:
+        output_path: 报告保存路径。
+        
+    Returns:
+        保存的文件路径。
+    """
     doc = Document()
     
     # 设置标题
@@ -115,66 +133,21 @@ def create_report():
         row = dev_table.add_row().cells
         for i, v in enumerate(d): row[i].text = v
     doc.add_paragraph('注：以上为初创标准（外包或兼职团队），若自有全职团队成本约在 15w-25w 之间。')
+ 
+    # 保存逻辑
+    if not output_path:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(base_dir, 'reports')
+    else:
+        output_dir = os.path.dirname(output_path)
 
-    # 6.2 服务器成本
-    doc.add_heading('6.2 服务器及基础云服务成本 (按月/年)', level=2)
-    doc.add_paragraph('推荐使用阿里云或腾讯云（国内 BGP 线路），初期配置建议如下：')
-    
-    cloud_table = doc.add_table(rows=1, cols=4)
-    cloud_table.style = 'Table Grid'
-    hdr = cloud_table.rows[0].cells
-    hdr[0].text, hdr[1].text, hdr[2].text, hdr[3].text = '组件', '建议配置', '数量', '年度预估 (RMB)'
-    
-    cloud_data = [
-        ['应用服务器 (ECS)', '4核 8G, 5Mbps带宽', '2台 (主从冗余)', '0.6w - 0.8w'],
-        ['云数据库 (RDS)', 'MySQL 8.0, 2核 4G, 50G存储', '1阵列', '0.3w - 0.5w'],
-        ['内容分发 (CDN)', '静态图片/头像加速', '1套 (按需计费)', '0.1w'],
-        ['对象存储 (OSS)', '用户实名证件、评价图片存储', '500G', '0.1w'],
-        ['其他 (SSL/域名)', '企业级免费/廉价版', '-', '0.05w']
-    ]
-    for d in cloud_data:
-        row = cloud_table.add_row().cells
-        for i, v in enumerate(d): row[i].text = v
-
-    # 6.3 运营成本
-    doc.add_heading('6.3 持续运营成本 (按月)', level=2)
-    ops_table = doc.add_table(rows=1, cols=3)
-    ops_table.style = 'Table Grid'
-    hdr = ops_table.rows[0].cells
-    hdr[0].text, hdr[1].text, hdr[2].text = '类别', '详细内容', '每月预算 (RMB)'
-    
-    ops_data = [
-        ['内容审核', '教师学历证书/身份信息人工核实', '0.3w - 0.5w'],
-        ['客服支持', '处理退款申诉、家长投诉、老师入驻引导', '0.4w - 0.8w'],
-        ['推广费 (核心)', '小红书/抖音投流、校园大使佣金', '1w - 3w (视增长目标)'],
-        ['微信支付手续费', '交易额的 0.6% (微信扣除)', '按流水 0.6% 计']
-    ]
-    for d in ops_data:
-        row = ops_table.add_row().cells
-        for i, v in enumerate(d): row[i].text = v
-
-    # 7. 推广方案
-    doc.add_heading('七、 推广方案 (快速裂变)', level=1)
-    
-    p = doc.add_paragraph()
-    p.add_run('1. 大学生（供应端）推广：').bold = True
-    doc.add_paragraph('设立“校园大使”计划，通过大学生勤工助学群、校园贴吧、校内社团进行裂变引流，以“高质量兼职”吸引老师入驻。')
-    
-    p = doc.add_paragraph()
-    p.add_run('2. 家长（需求端）推广：').bold = True
-    doc.add_paragraph('深耕“小红书”与“抖音”本地生活，发布关于教育焦虑缓解、习惯培养、素质教育相关的干货内容，精准投放同城流量。')
-    
-    p = doc.add_paragraph()
-    p.add_run('3. 社群裂变：').bold = True
-    doc.add_paragraph('利用微信群开展“推荐有礼”活动（如家长成功推荐其他家长下单，返还部分课时费），建立私域流量池。')
-    
-    # 保存文件
-    output_dir = r'E:\workrooten\myself'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    save_path = os.path.join(output_dir, '家教平台可行性研究报告.docx')
+        
+    save_path = output_path or os.path.join(output_dir, '家教平台可行性研究报告.docx')
     doc.save(save_path)
-    print(f"Report updated successfully at: {save_path}")
+    logger.info(f"Report updated successfully at: {save_path}")
+    return save_path
 
 if __name__ == "__main__":
     create_report()

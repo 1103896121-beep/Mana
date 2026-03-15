@@ -1,13 +1,21 @@
 /* eslint-disable react-hooks/purity */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './CoffeeCup.css';
+import './coffee-cup.css';
 
 interface CoffeeCupProps {
   percentage: number;
   isBubbling?: boolean;
 }
 
+/**
+ * 咖啡杯显示组件
+ * 实现基于 percentage 的液面高度变化、波浪动画以及能量注入时的冒泡粒子效果。
+ * 采用了玻璃拟态（Glassmorphism）视觉设计。
+ * 
+ * @param percentage 咖啡液位百分比 (0-100)
+ * @param isBubbling 是否正在注入能量（触发冒泡动画）
+ */
 const CoffeeCup: React.FC<CoffeeCupProps> = ({ percentage, isBubbling = false }) => {
   // 醇厚温暖的咖啡/拿铁渐变
   const getLiquidGradient = () => {

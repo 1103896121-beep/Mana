@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { soundUtils } from '../utils/soundUtils';
-import './CareBubble.css';
+import { useTranslation } from '../hooks/use-translation';
+import { soundUtils } from '../utils/sound-utils';
+import './care-bubble.css';
 
 interface CareBubbleProps {
   message: string | null;
@@ -28,10 +29,15 @@ const SHARD_COLORS = [
 ];
 
 /**
- * 温馨提示泡泡组件
- * 从屏幕底部冒出，点击后经历膨胀->缩小->膨胀->爆裂的过程
+ * 温馨提示气泡组件
+ * 从屏幕底部冒出，点击后经历膨胀->缩小->膨胀->爆裂的解压过程。
+ * 设计意图：通过有机物理感交互缓解专注后的心理压力。
+ * 
+ * @param message 展示的文本内容，为 null 时自动隐藏
+ * @param onPop 点击气泡爆破后的回调函数
  */
 const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
+  const { t } = useTranslation();
   // 'idle' -> 'wobbling' (膨胀缩小阶段) -> 'burst' (碎片飞散)
   const [phase, setPhase] = useState<'idle' | 'wobbling' | 'burst'>('idle');
   const [shards, setShards] = useState<Shard[]>([]);
@@ -110,7 +116,7 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
               }}
             >
               <span className="care-bubble-text">{message}</span>
-              <span className="bubble-tap-hint">tap to pop</span>
+              <span className="bubble-tap-hint">{t('carePrompt.tapToPop')}</span>
             </motion.div>
           )}
 

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, Trash2, X } from 'lucide-react';
-import { useTranslation } from '../hooks/useTranslation';
-import './TaskBubble.css';
+import { useTranslation } from '../hooks/use-translation';
+import './task-bubble.css';
 
 interface TaskBubbleProps {
   id: string;
@@ -14,11 +14,22 @@ interface TaskBubbleProps {
   onDelete: (id: string) => void;
 }
 
+/**
+ * 任务气泡组件
+ * 展示单个任务的标题、时长及创建日期，支持完成与删除操作。
+ * 
+ * @param id 任务唯一 ID
+ * @param text 任务内容
+ * @param duration 预计专注时间
+ * @param createdAt 创建时间戳
+ * @param detail 详细备注 (可选)
+ * @param onComplete 完成任务回调函数，接受任务ID和时长作为参数
+ * @param onDelete 删除任务回调函数，接受任务ID作为参数
+ */
 const TaskBubble: React.FC<TaskBubbleProps> = ({ 
   id, text, duration, createdAt, detail, onComplete, onDelete 
 }) => {
   const { t } = useTranslation();
-  console.log('TaskBubble version: 28.11 - Enhanced Feedback');
   const [isExploding, setIsExploding] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const dragStartPos = useRef<{ x: number, y: number } | null>(null);
@@ -84,15 +95,15 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({
             </div>
             <div className="task-meta">
               <div className="meta-item"><span>{formattedDate}</span></div>
-              <div className="meta-item"><span>{duration}m</span></div>
+              <div className="meta-item"><span>{duration}{t('header.minShort')}</span></div>
             </div>
           </div>
 
           <div className="bubble-actions">
-            <button className="action-btn complete-btn" onClick={handleComplete} title="Extract Energy">
+            <button className="action-btn complete-btn" onClick={handleComplete} title={t('taskViewport.extractEnergy')}>
               <Check size={20} />
             </button>
-            <button className="action-btn delete-btn" onClick={handleDeleteClick} title="Dissolve">
+            <button className="action-btn delete-btn" onClick={handleDeleteClick} title={t('taskViewport.dissolve')}>
               <Trash2 size={18} />
             </button>
           </div>
@@ -134,7 +145,7 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({
                 <section className="detail-stats">
                   <div className="stat-vessel">
                     <label>{t('taskViewport.focusTime')}</label>
-                    <p>{duration}m</p>
+                    <p>{duration}{t('header.minShort')}</p>
                   </div>
                   <div className="stat-vessel">
                     <label>{t('controls.time')}</label>

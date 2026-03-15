@@ -1,9 +1,27 @@
 import os
+import logging
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from typing import Optional
 
-def create_ai_enhanced_report():
+# 配置日志规范 (符合 Antigravity 规则)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def create_ai_enhanced_report(output_path: Optional[str] = None) -> str:
+    """
+    创建 AI 辅助开发成本分析报告。
+    
+    Args:
+        output_path: 报告保存路径。如果为 None，则保存到当前目录下的 'reports' 文件夹。
+        
+    Returns:
+        保存的文件路径。
+    """
     doc = Document()
     
     # 设置标题
@@ -100,13 +118,20 @@ def create_ai_enhanced_report():
         '结论：使用 AI 辅助研发是目前初创项目在资源有限情况下实现“降维打击”的最佳路径。'
     )
     
-    # 保存文件
-    output_dir = r'E:\workrooten\myself'
+    # 保存逻辑优化：避免硬编码根路径，优先使用相对路径
+    if not output_path:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(base_dir, 'reports')
+    else:
+        output_dir = os.path.dirname(output_path)
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    save_path = os.path.join(output_dir, '家教平台AI辅助开发成本分析.docx')
+        
+    save_path = output_path or os.path.join(output_dir, '家教平台AI辅助开发成本分析.docx')
     doc.save(save_path)
-    print(f"AI enhanced report saved successfully at: {save_path}")
+    logger.info(f"AI enhanced report saved successfully at: {save_path}")
+    return save_path
 
 if __name__ == "__main__":
     create_ai_enhanced_report()

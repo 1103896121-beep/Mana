@@ -1,5 +1,9 @@
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
+/**
+ * 音效与触觉反馈工具类
+ * 实现 Web Audio API 驱动的合成声效（冒泡、爆破）以及 Capacitor Haptics 震感反馈。
+ */
 class SoundUtils {
   private audioCtx: AudioContext | null = null;
 
