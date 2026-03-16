@@ -64,11 +64,16 @@ jobs:
                 in_house: false
               )
 
+              # Fetch certificates and provisioning profiles
+              get_certificates(api_key: api_key)
+              get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
+
               build_app(
-                project: "App.xcodeproj",
+                workspace: "App.xcworkspace",
                 scheme: "App",
                 export_method: "app-store",
-                xcargs: "DEVELOPMENT_TEAM=D86M3VQGR2 -allowProvisioningUpdates -allowProvisioningDeviceRegistration"
+                export_options: "App/ExportOptions.plist",
+                xcargs: "CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER='Mana App Store Profile' CODE_SIGN_IDENTITY='Apple Distribution' DEVELOPMENT_TEAM=D86M3VQGR2"
               )
 
               upload_to_testflight(
@@ -80,7 +85,6 @@ jobs:
           EOF
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
-          echo "--- End of Fastfile ---"
 
       - name: Build and Upload with Fastlane
         env:
