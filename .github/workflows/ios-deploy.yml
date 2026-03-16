@@ -68,7 +68,6 @@ jobs:
                 project: "App.xcodeproj",
                 scheme: "App",
                 export_method: "app-store",
-                team_id: "D86M3VQGR2",
                 xcargs: "DEVELOPMENT_TEAM=D86M3VQGR2 -allowProvisioningUpdates -allowProvisioningDeviceRegistration"
               )
 
