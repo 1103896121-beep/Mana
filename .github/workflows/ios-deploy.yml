@@ -62,8 +62,8 @@ jobs:
                 in_house: false
               )
 
-              # Auto-generate or fetch distribution certificate
-              get_certificates(api_key: api_key)
+              # Auto-generate distribution certificate (force revokes old orphaned certs)
+              get_certificates(api_key: api_key, force: true)
 
               # Fetch provisioning profile
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
