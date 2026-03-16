@@ -60,17 +60,19 @@ jobs:
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
+              setup_ci
+
               # Write Base64 string from environment to a local .p12 file
               p12_path = File.expand_path("distribution.p12", __dir__)
               p12_content = Base64.decode64(ENV["P12_BASE64"])
               File.write(p12_path, p12_content)
 
-              # Import the .p12 distribution certificate into the default login keychain
+              # Import the .p12 distribution certificate into the CI keychain
               import_certificate(
                 certificate_path: p12_path,
-                certificate_password: ENV["P12_PASSWORD"] || "",
-                keychain_name: "login.keychain",
-                keychain_password: ""
+                certificate_password: "", # Fastlane generated p12 has no password
+                keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "fastlane_tmp_keychain",
+                keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
               )
 
               api_key = app_store_connect_api_key(
