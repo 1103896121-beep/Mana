@@ -81,16 +81,43 @@ jobs:
                 distribute_external: false
               )
             end
+
+            desc "Generate and extract p12 certificate for manual saving"
+            lane :extract_p12 do
+              api_key = app_store_connect_api_key(
+                key_id: ENV["APPSTORE_KEY_ID"],
+                issuer_id: ENV["APPSTORE_ISSUER_ID"],
+                key_content: ENV["APPSTORE_API_PRIVATE_KEY"],
+                is_key_content_base64: false,
+                in_house: false
+              )
+
+              # Generate a new certificate and save it
+              cert_path = File.expand_path("../certs")
+              FileUtils.mkdir_p(cert_path)
+              
+              get_certificates(
+                api_key: api_key,
+                output_path: cert_path
+              )
+            end
           end
           EOF
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
 
-      - name: Build and Upload with Fastlane
+      - name: Extract P12 Certificate
         env:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
           cd ios/App
-          fastlane beta
+          fastlane extract_p12
+
+      - name: Upload Certificates Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-distribution-certificates
+          path: ios/App/certs/
+          retention-days: 1
