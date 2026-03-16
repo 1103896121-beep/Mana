@@ -60,30 +60,17 @@ jobs:
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
-              # Setup a temporary keychain for the CI runner
-              keychain_name = "fastlane_tmp_keychain"
-              keychain_password = "fastlane_tmp_keychain_password"
-              
-              create_keychain(
-                name: keychain_name,
-                password: keychain_password,
-                default_keychain: true,
-                unlock: true,
-                timeout: 3600,
-                lock_when_sleeps: false
-              )
-
               # Write Base64 string from environment to a local .p12 file
               p12_path = File.expand_path("distribution.p12", __dir__)
               p12_content = Base64.decode64(ENV["P12_BASE64"])
               File.write(p12_path, p12_content)
 
-              # Import the .p12 distribution certificate into our temp keychain
+              # Import the .p12 distribution certificate into the default login keychain
               import_certificate(
                 certificate_path: p12_path,
                 certificate_password: ENV["P12_PASSWORD"] || "",
-                keychain_name: keychain_name,
-                keychain_password: keychain_password
+                keychain_name: "login.keychain",
+                keychain_password: ""
               )
 
               api_key = app_store_connect_api_key(
@@ -112,7 +99,6 @@ jobs:
 
               # Clean up
               File.delete(p12_path) if File.exist?(p12_path)
-              delete_keychain(name: keychain_name)
             end
           end
           EOF
