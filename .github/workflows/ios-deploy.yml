@@ -86,7 +86,7 @@ jobs:
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
 
               build_app(
-                workspace: "App.xcworkspace",
+                project: "App.xcodeproj",
                 scheme: "App",
                 export_method: "app-store",
                 export_options: "App/ExportOptions.plist",
