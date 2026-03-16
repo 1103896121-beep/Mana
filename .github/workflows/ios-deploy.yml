@@ -74,7 +74,7 @@ jobs:
               )
 
               # Write Base64 string from environment to a local .p12 file
-              p12_path = File.expand_path("distribution.p12")
+              p12_path = File.expand_path("distribution.p12", __dir__)
               p12_content = Base64.decode64(ENV["P12_BASE64"])
               File.write(p12_path, p12_content)
 
