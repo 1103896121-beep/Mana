@@ -60,21 +60,6 @@ jobs:
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
-              setup_ci
-
-              # Write Base64 string from environment to a local .p12 file
-              p12_path = File.expand_path("distribution.p12", __dir__)
-              p12_content = Base64.decode64(ENV["P12_BASE64"])
-              File.write(p12_path, p12_content)
-
-              # Import the .p12 distribution certificate into the CI keychain
-              import_certificate(
-                certificate_path: p12_path,
-                certificate_password: "", # Fastlane generated p12 has no password
-                keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "fastlane_tmp_keychain",
-                keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
-              )
-
               api_key = app_store_connect_api_key(
                 key_id: ENV["APPSTORE_KEY_ID"],
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
@@ -98,14 +83,43 @@ jobs:
                 api_key: api_key,
                 distribute_external: false
               )
-
-              # Clean up
-              File.delete(p12_path) if File.exist?(p12_path)
             end
           end
           EOF
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
+
+      - name: Install Apple Certificate
+        env:
+          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+        run: |
+          cd ios/App
+          # Install certificate to a temporary keychain explicitly trusted for codesigning
+          CERT_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode the base64 certificate
+          echo -n "$P12_BASE64" | base64 --decode -o $CERT_PATH
+
+          # Create empty keychain
+          security create-keychain -p "action" $KEYCHAIN_PATH
+
+          # Set default keychain
+          security default-keychain -s $KEYCHAIN_PATH
+
+          # Unlock the keychain
+          security unlock-keychain -p "action" $KEYCHAIN_PATH
+
+          # Import certificate to keychain (using the empty password default from Fastlane)
+          # Note: Fastlane exported the p12 with an empty password, ignoring the user's placeholder "a"
+          security import $CERT_PATH -k $KEYCHAIN_PATH -P "" -T /usr/bin/codesign
+
+          # Enable codesigning partitioning
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "action" $KEYCHAIN_PATH
+
+          echo "--- Verify Identities ---"
+          security find-identity -v -p codesigning
 
       - name: Build and Upload with Fastlane
         env:
