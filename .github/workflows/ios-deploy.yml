@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -49,10 +49,8 @@ jobs:
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
           cd ios/App
+          mkdir -p fastlane
           # Fastlane requires matching certificates and profiles (Match or Cert/Sigh)
-          # A robust enterprise pipeline uses 'match', but for a simple CI/CD we can use xcodebuild directly or Fastlane's build_app.
-          # Here we initialize a minimal Fastfile on the fly for Pilot (Upload to TestFlight/App Store)
-
           cat << 'EOF' > fastlane/Fastfile
           default_platform(:ios)
 
