@@ -70,7 +70,7 @@ jobs:
               # Note: For strict CI, usually certificates are injected, but xcodebuild can attempt automatic signing using the API key.
               
               build_app(
-                workspace: "App.xcworkspace",
+                project: "App.xcodeproj",
                 scheme: "App",
                 export_method: "app-store"
               )
