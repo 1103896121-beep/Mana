@@ -115,9 +115,10 @@ jobs:
           cd ios/App
           fastlane extract_p12
 
-      - name: Upload Certificates Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-distribution-certificates
-          path: ios/App/certs/
-          retention-days: 1
+      - name: Commit Certificates to Repository
+        run: |
+          git config --global user.name "antigravity-bot"
+          git config --global user.email "bot@merchlens.ai"
+          git add ios/App/certs/
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: save generated p12 certificates" && git push origin HEAD:main)
