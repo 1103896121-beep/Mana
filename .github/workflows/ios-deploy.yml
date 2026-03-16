@@ -49,6 +49,8 @@ jobs:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
         run: |
           cd ios/App
           mkdir -p fastlane
@@ -58,6 +60,31 @@ jobs:
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
+              # Setup a temporary keychain for the CI runner
+              keychain_name = "fastlane_tmp_keychain"
+              keychain_password = "fastlane_tmp_keychain_password"
+              
+              create_keychain(
+                name: keychain_name,
+                password: keychain_password,
+                default_keychain: true,
+                unlock: true,
+                timeout: 3600,
+                lock_when_sleeps: false
+              )
+
+              # Write Base64 string from environment to a local .p12 file
+              p12_content = Base64.decode64(ENV["P12_BASE64"])
+              File.write("distribution.p12", p12_content)
+
+              # Import the .p12 distribution certificate into our temp keychain
+              import_certificate(
+                certificate_path: "distribution.p12",
+                certificate_password: ENV["P12_PASSWORD"] || "",
+                keychain_name: keychain_name,
+                keychain_password: keychain_password
+              )
+
               api_key = app_store_connect_api_key(
                 key_id: ENV["APPSTORE_KEY_ID"],
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
@@ -66,8 +93,7 @@ jobs:
                 in_house: false
               )
 
-              # Fetch certificates and provisioning profiles
-              get_certificates(api_key: api_key)
+              # Fetch provisioning profile
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
 
               build_app(
@@ -82,45 +108,23 @@ jobs:
                 api_key: api_key,
                 distribute_external: false
               )
-            end
 
-            desc "Generate and extract p12 certificate for manual saving"
-            lane :extract_p12 do
-              api_key = app_store_connect_api_key(
-                key_id: ENV["APPSTORE_KEY_ID"],
-                issuer_id: ENV["APPSTORE_ISSUER_ID"],
-                key_content: ENV["APPSTORE_API_PRIVATE_KEY"],
-                is_key_content_base64: false,
-                in_house: false
-              )
-
-              # Generate a new certificate and save it
-              cert_path = File.expand_path("../certs")
-              FileUtils.mkdir_p(cert_path)
-              
-              get_certificates(
-                api_key: api_key,
-                output_path: cert_path
-              )
+              # Clean up
+              File.delete("distribution.p12") if File.exist?("distribution.p12")
+              delete_keychain(name: keychain_name)
             end
           end
           EOF
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
 
-      - name: Extract P12 Certificate
+      - name: Build and Upload with Fastlane
         env:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
         run: |
           cd ios/App
-          fastlane extract_p12
-
-      - name: Commit Certificates to Repository
-        run: |
-          git config --global user.name "antigravity-bot"
-          git config --global user.email "bot@merchlens.ai"
-          git add ios/App/certs/
-          # Only commit if there are changes
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: save generated p12 certificates" && git push origin HEAD:main)
+          fastlane beta
