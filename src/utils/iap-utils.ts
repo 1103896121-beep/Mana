@@ -1,8 +1,8 @@
 import { Capacitor } from '@capacitor/core';
 
 export const IAP_IDS = {
-  coffee: 'com.david.mana.tip.coffee',
-  lunch: 'com.david.mana.tip.lunch',
+  coffee: 'com.qingning.mana.iap.coffee',
+  lunch: 'com.qingning.mana.iap.lunch',
 };
 
 /**
@@ -111,7 +111,7 @@ class IAPUtils {
 
   /**
    * 发起内购
-   * @param productId 产品 ID (com.david.mana.tip.*)
+   * @param productId 产品 ID (com.qingning.mana.tip.*)
    * @returns 购买是否发起成功
    */
   public async purchase(productId: string): Promise<boolean> {

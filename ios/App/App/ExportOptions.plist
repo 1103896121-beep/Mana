@@ -10,7 +10,7 @@
 	<string>app-store</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.david.mana</key>
+		<key>com.qingning.mana</key>
 		<string>Mana App Store Profile</string>
 	</dict>
 	<key>signingCertificate</key>
