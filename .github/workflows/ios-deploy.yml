@@ -74,12 +74,13 @@ jobs:
               )
 
               # Write Base64 string from environment to a local .p12 file
+              p12_path = File.expand_path("distribution.p12")
               p12_content = Base64.decode64(ENV["P12_BASE64"])
-              File.write("distribution.p12", p12_content)
+              File.write(p12_path, p12_content)
 
               # Import the .p12 distribution certificate into our temp keychain
               import_certificate(
-                certificate_path: "distribution.p12",
+                certificate_path: p12_path,
                 certificate_password: ENV["P12_PASSWORD"] || "",
                 keychain_name: keychain_name,
                 keychain_password: keychain_password
@@ -110,7 +111,7 @@ jobs:
               )
 
               # Clean up
-              File.delete("distribution.p12") if File.exist?("distribution.p12")
+              File.delete(p12_path) if File.exist?(p12_path)
               delete_keychain(name: keychain_name)
             end
           end
