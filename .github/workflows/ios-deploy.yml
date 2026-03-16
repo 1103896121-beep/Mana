@@ -42,7 +42,7 @@ jobs:
       - name: Install Fastlane
         run: gem install fastlane
         
-      - name: Setup Provisioning Profile resolving
+      - name: Create Fastfile and Debug
         env:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
@@ -50,14 +50,12 @@ jobs:
         run: |
           cd ios/App
           mkdir -p fastlane
-          # Fastlane requires matching certificates and profiles (Match or Cert/Sigh)
           cat << 'EOF' > fastlane/Fastfile
           default_platform(:ios)
 
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
-              # Setup API Key
               api_key = app_store_connect_api_key(
                 key_id: ENV["APPSTORE_KEY_ID"],
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
@@ -66,17 +64,14 @@ jobs:
                 in_house: false
               )
 
-              # Automatically manage signing (relies on Xcode's 'Automatically manage signing' being checked)
-              # Note: For strict CI, usually certificates are injected, but xcodebuild can attempt automatic signing using the API key.
-              
               build_app(
                 project: "App.xcodeproj",
                 scheme: "App",
                 export_method: "app-store",
-                xcargs: "DEVELOPMENT_TEAM=D86M3VQGR2 -allowProvisioningUpdates"
+                team_id: "D86M3VQGR2",
+                xcargs: "DEVELOPMENT_TEAM=D86M3VQGR2 -allowProvisioningUpdates -allowProvisioningDeviceRegistration"
               )
 
-              # Upload to TestFlight (App Store Connect API)
               upload_to_testflight(
                 api_key: api_key,
                 distribute_external: false
@@ -84,6 +79,9 @@ jobs:
             end
           end
           EOF
+          echo "--- Content of generated Fastfile ---"
+          cat fastlane/Fastfile
+          echo "--- End of Fastfile ---"
 
       - name: Build and Upload with Fastlane
         env:
