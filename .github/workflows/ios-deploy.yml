@@ -44,13 +44,7 @@ jobs:
       - name: Install Fastlane
         run: gem install fastlane
         
-      - name: Create Fastfile and Debug
-        env:
-          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
-          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+      - name: Create Fastfile
         run: |
           cd ios/App
           mkdir -p fastlane
@@ -67,6 +61,9 @@ jobs:
                 is_key_content_base64: false,
                 in_house: false
               )
+
+              # Auto-generate or fetch distribution certificate
+              get_certificates(api_key: api_key)
 
               # Fetch provisioning profile
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
@@ -89,45 +86,11 @@ jobs:
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
 
-      - name: Install Apple Certificate
-        env:
-          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
-        run: |
-          cd ios/App
-          # Install certificate to a temporary keychain explicitly trusted for codesigning
-          CERT_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          # Decode the base64 certificate
-          echo -n "$P12_BASE64" | base64 --decode -o $CERT_PATH
-
-          # Create empty keychain
-          security create-keychain -p "action" $KEYCHAIN_PATH
-
-          # Set default keychain
-          security default-keychain -s $KEYCHAIN_PATH
-
-          # Unlock the keychain
-          security unlock-keychain -p "action" $KEYCHAIN_PATH
-
-          # Import certificate to keychain (using the empty password default from Fastlane)
-          # Note: Fastlane exported the p12 with an empty password, ignoring the user's placeholder "a"
-          security import $CERT_PATH -k $KEYCHAIN_PATH -P "" -T /usr/bin/codesign
-
-          # Enable codesigning partitioning
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "action" $KEYCHAIN_PATH
-
-          echo "--- Verify Identities ---"
-          security find-identity -v -p codesigning
-
       - name: Build and Upload with Fastlane
         env:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
         run: |
           cd ios/App
           fastlane beta
