@@ -102,6 +102,10 @@ jobs:
                 code_sign_identity: "Apple Distribution"
               )
 
+              # Print versions for debugging
+              UI.message("Build Version: #{get_info_plist_value(path: 'App/Info.plist', key: 'CFBundleVersion')}")
+              UI.message("Marketing Version: #{get_info_plist_value(path: 'App/Info.plist', key: 'CFBundleShortVersionString')}")
+
               build_app(
                 project: "App.xcodeproj",
                 scheme: "App",
@@ -111,7 +115,8 @@ jobs:
 
               upload_to_testflight(
                 api_key: api_key,
-                distribute_external: false
+                distribute_external: false,
+                skip_waiting_for_build_processing: true # Speed up CI
               )
             end
           end
