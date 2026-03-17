@@ -161,8 +161,10 @@ class IAPUtils {
       const product = store?.get ? store.get(productId) : (window as any).CdvPurchase?.store?.get(productId);
       
       // Build 11 Debug: 显式提示产品加载状态
+      // Build 19 Diagnostic Alert: Enumerating available IDs to check sync status
       if (!product) {
-        alert(`IAP Error: Product ${productId} not loaded from App Store yet. Please wait or check internet.`);
+        const availableIds = (this.store as any).products?.map((p: any) => p.id).join(', ') || 'NONE';
+        alert(`IAP Error: Product ${productId} not loaded. Registered IDs in memory: [${availableIds}]. Please wait or check internet.`);
         return false;
       }
 

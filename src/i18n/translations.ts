@@ -118,6 +118,7 @@ export const translations = {
       last7Days: "过去7天趋势",
       close: "关闭",
       avg7Days: "7日平均",
+      bestDay: "表现最棒的一天是 {{date}}，专注了 {{mins}} 分钟！",
     },
     about: {
       title: "关于 Mana",
