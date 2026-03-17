@@ -36,6 +36,8 @@ const App: React.FC = () => {
     getHistory
   } = useMana();
 
+  const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
+
   useEffect(() => {
     // iOS 终极硬件激活策略：使用 window 级别的原生 touchstart 以获得最高优先级
     const unlock = () => {
