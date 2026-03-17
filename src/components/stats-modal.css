@@ -10,8 +10,9 @@
   -webkit-backdrop-filter: blur(25px);
   z-index: 3000;
   display: block; /* 移除 flex 干扰 */
-  overflow: hidden;
+  overflow: hidden; /* 强制锁死视口滚动 */
   overscroll-behavior: contain;
+  touch-action: none; /* 遮罩层禁止手势偏移 */
 }
 
 [data-theme='light'] .stats-overlay {
@@ -27,6 +28,8 @@
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden; /* 物理锁死横向滚动 */
+  touch-action: pan-y; /* 仅允许纵向追随，禁止横向手势触发偏移 */
   border: 1px solid var(--glass-border);
   border-radius: 36px;
   padding: 32px 28px;
