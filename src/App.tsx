@@ -36,17 +36,30 @@ const App: React.FC = () => {
     getHistory
   } = useMana();
 
-  const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
-
-  // iOS 硬件激活：在第一次真实交互时解锁音频和内购
-  const handleGlobalInteraction = () => {
-    if (!hasUnlockedContext) {
+  useEffect(() => {
+    // iOS 终极硬件激活策略：使用 window 级别的原生 touchstart 以获得最高优先级
+    const unlock = () => {
+      console.log('Build 7: System-level touch detected, unlocking hardware...');
       soundUtils.init();
       iapUtils.init();
       setHasUnlockedContext(true);
-      console.log('Build 5: Global hardware interaction unlocked');
-    }
-  };
+      
+      // 解锁后移除，防止性能消耗
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('click', unlock);
+    };
+
+    window.addEventListener('touchstart', unlock);
+    window.addEventListener('click', unlock);
+    
+    // 初始化内购
+    iapUtils.init();
+
+    return () => {
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('click', unlock);
+    };
+  }, []);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const savedTheme = localStorage.getItem('mana_theme') as 'dark' | 'light';
