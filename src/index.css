@@ -106,20 +106,28 @@ body {
 }
 
 .app-container {
-  width: 100%;
-  max-width: 430px; /* iPhone 15 Pro Max width approximate */
-  height: 90vh;
-  max-height: 932px;
+  width: 100vw;
+  height: 100dvh;
   background-color: var(--color-bg-primary);
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
-  border-radius: 44px; /* iOS Device corner radius */
-  border: 1px solid rgba(255, 255, 255, 0.1); 
-  margin: 20px auto;
+  margin: 0;
   overflow: hidden;
-  flex-shrink: 0; /* 防止在外层容器中被缩小 */
+  flex-shrink: 0;
+}
+
+/* 仅在桌面或大屏幕上显示为模拟手机框 */
+@media (min-width: 768px) {
+  .app-container {
+    width: 430px;
+    height: 90vh;
+    max-height: 932px;
+    margin: 20px auto;
+    border-radius: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Mana Field Dynamic Background */
@@ -162,19 +170,10 @@ body {
   to { transform: translate(5%, 5%); }
 }
 
-/* For mobile devices, take full screen */
-@media (max-width: 450px) {
+/* 移动端特定优化 */
+@media (max-width: 767px) {
   body {
     align-items: flex-start;
-  }
-  .app-container {
-    height: 100dvh;
-    max-height: 100dvh;
-    width: 100vw; /* 强制填满屏幕宽度 */
-    border-radius: 0;
-    border: none;
-    margin: 0;
-    max-width: none; /* 移除任何最大宽度限制 */
   }
 }
 

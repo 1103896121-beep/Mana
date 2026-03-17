@@ -15,23 +15,23 @@ class SoundUtils {
   }
 
   public init() {
-    if (!this.audioCtx) {
-      this.audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      
-      // iOS 手势激励：在任何地方第一次点击时解锁音频
+    // iOS 终极解锁：context 必须在 user-gesture 回调中 NEW 出来
+    if (!this.audioCtx || this.audioCtx.state === 'closed') {
       const unlock = () => {
-        if (this.audioCtx) {
-          this.audioCtx.resume().then(() => {
-            window.removeEventListener('click', unlock);
-            window.removeEventListener('touchstart', unlock);
-          });
+        // 只有真的没有或者被关闭了才 NEW
+        if (!this.audioCtx || this.audioCtx.state === 'closed') {
+          this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          console.log('AudioContext created/resumed via gesture');
+        } else if (this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
         }
+        
+        // 解锁后移除监听
+        window.removeEventListener('click', unlock);
+        window.removeEventListener('touchstart', unlock);
       };
       window.addEventListener('click', unlock);
       window.addEventListener('touchstart', unlock);
-    }
-    if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
     }
   }
 

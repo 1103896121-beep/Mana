@@ -102,8 +102,9 @@ class IAPUtils {
         this.isReady = true;
       });
 
-      // Initialize the store
+      // Initialize and then update to fetch product info
       this.store.initialize();
+      this.store.update();
     } catch (e) {
       console.error('IAP Init error:', e);
     }
