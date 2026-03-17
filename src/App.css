@@ -229,15 +229,15 @@
   margin-bottom: var(--spacing-lg);
   box-shadow: 
     0 30px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 0.5px rgba(255, 255, 255, 0.1); /* 柔和边缘 */
+    0 0 0 0.5px rgba(255, 255, 255, 0.1);
   transition: var(--transition-smooth);
   position: absolute;
-  top: 100px;
-  width: min(90%, 380px); /* 限制宽度，防止挤压 */
+  top: min(15vh, 120px); /* 视口百分比加像素上限，防止过低 */
+  width: min(92%, 400px); 
   left: 50%;
   transform: translateX(-50%);
   z-index: 150;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(var(--color-bg-primary-rgb), 0.95); /* 使用变量并增加不透明度 */
 }
 
 [data-theme='light'] .quick-add-panel {

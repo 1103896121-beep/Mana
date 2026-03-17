@@ -17,6 +17,18 @@ class SoundUtils {
   public init() {
     if (!this.audioCtx) {
       this.audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      
+      // iOS 手势激励：在任何地方第一次点击时解锁音频
+      const unlock = () => {
+        if (this.audioCtx) {
+          this.audioCtx.resume().then(() => {
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('touchstart', unlock);
+          });
+        }
+      };
+      window.addEventListener('click', unlock);
+      window.addEventListener('touchstart', unlock);
     }
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();

@@ -170,9 +170,11 @@ body {
   .app-container {
     height: 100dvh;
     max-height: 100dvh;
+    width: 100vw; /* 强制填满屏幕宽度 */
     border-radius: 0;
     border: none;
     margin: 0;
+    max-width: none; /* 移除任何最大宽度限制 */
   }
 }
 
