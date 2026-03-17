@@ -7,6 +7,7 @@ import CareBubble from './components/care-bubble';
 import StatsModal from './components/stats-modal';
 import { useTranslation } from './hooks/use-translation';
 import iapUtils, { IAP_IDS } from './utils/iap-utils';
+import soundUtils from './utils/sound-utils';
 import { useMana } from './hooks/use-mana';
 import type { DailyLog } from './hooks/use-mana';
 import './App.css';
@@ -52,7 +53,14 @@ const App: React.FC = () => {
     return savedTheme || 'dark';
   });
 
-  const [showInput, setShowInput] = useState(false);
+  useEffect(() => {
+    iapUtils.init();
+  }, []);
+
+  const [activeTheme, setActiveTheme] = useState<'dark' | 'light'>('dark'); // 兼容之前的误操作或保持一致性
+  useEffect(() => {
+    setActiveTheme(theme);
+  }, [theme]);
   const [showStats, setShowStats] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
