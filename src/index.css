@@ -116,9 +116,10 @@ body {
   flex-direction: column;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
   border-radius: 44px; /* iOS Device corner radius */
-  border: 8px solid #2c2c2e; /* Subtle device frame */
+  border: 1px solid rgba(255, 255, 255, 0.1); 
   margin: 20px auto;
   overflow: hidden;
+  flex-shrink: 0; /* 防止在外层容器中被缩小 */
 }
 
 /* Mana Field Dynamic Background */

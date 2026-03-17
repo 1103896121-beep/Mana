@@ -54,6 +54,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.body.dataset.theme = theme;
+    // 初始化内购商店
+    iapUtils.init();
   }, [theme]);
 
   const toggleTheme = () => {

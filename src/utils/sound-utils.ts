@@ -43,8 +43,7 @@ class SoundUtils {
     
     // Create a master gain node for the bubbling sound to control its overall volume
     const masterGain = this.audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0.4, now); // Lowered from 1.0 for better comfort
-    masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // Shorter fade
+    masterGain.gain.setValueAtTime(0.4, now); // Initial volume
     masterGain.connect(this.audioCtx.destination);
 
     // Create multiple overlapping bubble sounds
