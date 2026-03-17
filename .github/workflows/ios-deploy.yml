@@ -83,8 +83,12 @@ jobs:
               end
               UI.success("All Distribution certificates revoked. Creating fresh one...")
 
-              # Generate a brand new distribution certificate
-              get_certificates(api_key: api_key)
+              # Generate a brand new distribution certificate (into the CI keychain)
+              get_certificates(
+                api_key: api_key,
+                keychain_path: ENV["MATCH_KEYCHAIN_PATH"],
+                keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
+              )
 
               # Fetch provisioning profile
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
