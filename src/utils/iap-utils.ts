@@ -42,6 +42,7 @@ interface CdvPurchaseStore {
   error: (cb: (err: CdvPurchaseError) => void) => void;
   ready: (cb: () => void) => void;
   initialize: () => void;
+  update: () => void;
   get: (productId: string) => CdvPurchaseProduct | undefined;
   requestPayment: (params: { id: string; platform: string }) => Promise<CdvPurchaseError | null>;
 }
