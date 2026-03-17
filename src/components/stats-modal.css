@@ -1,6 +1,10 @@
 .stats-overlay {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
@@ -9,6 +13,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overscroll-behavior: contain; /* 阻断弹性滚动 */
 }
 
 [data-theme='light'] .stats-overlay {

@@ -136,22 +136,20 @@ class IAPUtils {
         return false;
       }
 
-      return new Promise((resolve) => {
-        // v13 simplified ordering
-        this.store?.requestPayment({
-          id: productId,
-          platform: 'apple-appstore'
-        }).then((error) => {
-          if (error) {
-            console.error('IAP requestPayment failed:', error);
-            resolve(false);
-          } else {
-            resolve(true); 
-          }
-        }).catch(() => {
-          resolve(false);
-        });
+      // v13 Standard API: Use order() from the default offer
+      const offer = (product as any).getOffer();
+      if (offer) {
+        await offer.order();
+        return true;
+      }
+
+      // Fallback to requestPayment if offer is missing (unlikely in v13)
+      const error = await (this.store as any).requestPayment({
+        id: productId,
+        platform: 'apple-appstore'
       });
+      
+      return !error;
     } catch (e) {
       console.error('IAP purchase error:', e);
       return false;
