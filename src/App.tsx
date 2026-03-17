@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Plus, Moon, Sun, Trash2, Languages, BarChart2, Info } from 'lucide-react';
 import TaskBubble from './components/task-bubble';
@@ -174,14 +175,14 @@ const App: React.FC = () => {
 
       <main className="task-viewport">
         <AnimatePresence>
-          {showInput && (
+          {showInput && createPortal(
             <motion.div 
               className="panel-overlay" 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               onClick={() => setShowInput(false)}
-              style={{ zIndex: 2000 }}
+              style={{ zIndex: 9999 }}
             >
               <motion.div 
                 initial={{ y: 20, opacity: 0 }} 
@@ -203,7 +204,8 @@ const App: React.FC = () => {
                 </div>
                 <button className="confirm-add-btn" onClick={addTask}>{t('taskViewport.establishBtn')}</button>
               </motion.div>
-            </motion.div>
+            </motion.div>,
+            document.body
           )}
         </AnimatePresence>
 
@@ -237,8 +239,8 @@ const App: React.FC = () => {
       <CareBubble message={careMessage} onPop={() => setCareMessage(null)} />
 
       <AnimatePresence>
-        {confirmAction && (
-          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmAction(null)} style={{ zIndex: 3000 }}>
+        {confirmAction && createPortal(
+          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmAction(null)} style={{ zIndex: 9999 }}>
             <motion.div className="confirm-modal glass-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
               <h3>{confirmAction.type === 'single' ? t('common.confirmDelete') : t('common.clearExpired')}</h3>
               <p>{confirmAction.type === 'single' ? t('deleteConfirm') : t('clearConfirm')}</p>
@@ -247,13 +249,14 @@ const App: React.FC = () => {
                 <button className="confirm-delete-btn" onClick={confirmDelete}>{confirmAction.type === 'single' ? t('common.dissolve') : t('common.clear')}</button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {showAbout && (
-          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAbout(false)} style={{ zIndex: 3000 }}>
+        {showAbout && createPortal(
+          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAbout(false)} style={{ zIndex: 9999 }}>
             <motion.div className="confirm-modal glass-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
               <h3>{t('about.title')}</h3>
               <div style={{ textAlign: 'left', marginTop: '8px', marginBottom: '16px' }}>
@@ -298,7 +301,8 @@ const App: React.FC = () => {
                 <button className="cancel-btn" style={{ width: '100%', flex: 'none' }} disabled={isPurchasing} onClick={() => setShowAbout(false)}>{t('about.close')}</button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
 

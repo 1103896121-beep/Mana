@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import { X, BarChart2, Flame } from 'lucide-react';
 import { useTranslation } from '../hooks/use-translation';
@@ -52,7 +53,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
 
   const todayStr = new Date().toDateString();
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -131,7 +132,9 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
               {bestDay && bestDay.minutes > 0 && (
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '-10px' }}>
                   <Flame size={14} color="#ff9500" />
-                  {t('stats.bestDay').replace('{{date}}', bestDay.date.split('-').slice(1).join('/')).replace('{{mins}}', String(bestDay.minutes))}
+                  {(t('stats.bestDay') || 'Best: {{date}} {{mins}}m')
+                    .replace('{{date}}', bestDay.date.split('-').slice(1).join('/'))
+                    .replace('{{mins}}', String(bestDay.minutes))}
                 </div>
               )}
             </div>
@@ -142,7 +145,8 @@ const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, history, total
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
