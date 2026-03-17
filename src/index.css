@@ -104,11 +104,6 @@ body {
   align-items: center;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
-  position: fixed; /* 固定 body 防止弹性滚动干扰布局 */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 .app-container {

@@ -229,11 +229,11 @@
   margin-bottom: var(--spacing-lg);
   box-shadow: 
     0 30px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    0 0 0 0.5px rgba(255, 255, 255, 0.2); /* 亮色微边 */
   transition: var(--transition-smooth);
   width: min(92%, 400px); 
   z-index: 150;
-  background: rgba(var(--color-bg-primary-rgb), 0.95); /* 使用变量并增加不透明度 */
+  background: rgba(40, 40, 42, 0.9); /* 回归 Build 5 的半透明质感 */
 }
 
 [data-theme='light'] .quick-add-panel {

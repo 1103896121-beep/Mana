@@ -132,7 +132,7 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div className={`app-container ${theme}`} data-theme={theme} onPointerDown={handleGlobalInteraction} style={appStyle}>
+    <div className={`app-container ${theme}`} data-theme={theme} style={appStyle}>
       <header className="app-header glass-panel">
         <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
           <div className="mana-header-main">
