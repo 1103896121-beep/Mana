@@ -53,14 +53,7 @@ const App: React.FC = () => {
     return savedTheme || 'dark';
   });
 
-  useEffect(() => {
-    iapUtils.init();
-  }, []);
-
-  const [activeTheme, setActiveTheme] = useState<'dark' | 'light'>('dark'); // 兼容之前的误操作或保持一致性
-  useEffect(() => {
-    setActiveTheme(theme);
-  }, [theme]);
+  const [showInput, setShowInput] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
@@ -74,7 +67,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.body.dataset.theme = theme;
-    // 初始化内购商店
+    // 静默初始化商店
     iapUtils.init();
   }, [theme]);
 
@@ -139,7 +132,8 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div className={`app-container ${activeTheme}`} data-theme={activeTheme} onPointerDown={handleGlobalInteraction} style={appStyle}>
+  return (
+    <div className={`app-container ${theme}`} data-theme={theme} onPointerDown={handleGlobalInteraction} style={appStyle}>
       <header className="app-header glass-panel">
         <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
           <div className="mana-header-main">
