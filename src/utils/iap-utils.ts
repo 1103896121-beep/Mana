@@ -94,6 +94,11 @@ class IAPUtils {
         receipt.finish(); // Finish transaction to allow buying again
       });
 
+      // Build 16: Deep Reactive - Listen to ANY product changes
+      (this.store as any).when().product().updated((p: any) => {
+        console.log(`IAP: Product ${p.id} state updated to: ${p.state}`);
+      });
+
       // Build 15: Reactive logic - Update product statuses periodically
       this.store.ready(() => {
         console.log('IAP: Store is READY');
@@ -109,14 +114,7 @@ class IAPUtils {
       (this.store as any).initialize();
       this.store.update(); // Initial fetch
       
-      // Build 15: Background interval to keep product context active in dev/TF
-      setInterval(() => {
-        if (this.store) {
-          this.store.update(); 
-        }
-      }, 10000); // Sync every 10s to keep registry alive
-      
-      console.log('IAP: Store initialization triggered with background sync');
+      console.log('IAP: Store initialization triggered with background sync listeners');
     } catch (e) {
       console.error('IAP Init error:', e);
     }
