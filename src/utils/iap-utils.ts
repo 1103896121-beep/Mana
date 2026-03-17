@@ -65,66 +65,68 @@ class IAPUtils {
       console.log('IAP: Already initialized');
       return;
     }
+
+    const setupStore = () => {
+      const globalStore = (window as any).CdvPurchase?.store || (window as any).store;
+      if (!globalStore) {
+        console.warn('IAP: Store plugin not available yet, waiting...');
+        return false;
+      }
+
+      this.store = globalStore;
+      this.initialized = true;
+
+      try {
+        this.store!.register([
+          { id: IAP_IDS.coffee, type: 'consumable', platform: 'apple-appstore' },
+          { id: IAP_IDS.lunch, type: 'consumable', platform: 'apple-appstore' }
+        ]);
+
+        this.store!.when().approved((transaction: any) => transaction.verify());
+        this.store!.when().verified((receipt: any) => receipt.finish());
+
+        (this.store as any).when().product().updated((p: any) => {
+          console.log(`IAP: Product ${p.id} state updated to: ${p.state}`);
+        });
+
+        this.store!.ready(() => {
+          console.log('IAP: Store is READY');
+          this.isReady = true;
+        });
+
+        this.store!.error((err: any) => {
+          console.error('IAP Error: ' + JSON.stringify(err));
+        });
+
+        (this.store as any).initialize();
+        this.store!.update();
+        console.log('IAP: Store initialization successful');
+        return true;
+      } catch (e) {
+        this.initialized = false;
+        console.error('IAP Init error:', e);
+        return false;
+      }
+    };
+
+    // 尝试立即初始化
+    if (setupStore()) return;
+
+    // 如果失败，监听系统就绪事件
+    const handleDeviceReady = () => {
+      console.log('IAP: deviceReady triggered, retrying init...');
+      setupStore();
+      document.removeEventListener('deviceready', handleDeviceReady);
+    };
+    document.addEventListener('deviceready', handleDeviceReady);
     
-    // Safety check for store availability
-    const globalStore = (window as unknown as { store: CdvPurchaseStore }).store;
-    if (!globalStore) {
-      console.warn('IAP: Store plugin not available.');
-      return;
-    }
-
-    this.store = globalStore;
-    this.initialized = true;
-
-    // Register consumable products (CdvPurchase v13+)
-    try {
-      this.store.register([
-        {
-          id: IAP_IDS.coffee,
-          type: 'consumable',
-          platform: 'apple-appstore'
-        },
-        {
-          id: IAP_IDS.lunch,
-          type: 'consumable',
-          platform: 'apple-appstore'
-        }
-      ]);
-
-      // Setup event listeners
-      this.store.when().approved((transaction) => {
-        transaction.verify(); // Starts receipt validation
-      });
-
-      this.store.when().verified((receipt) => {
-        receipt.finish(); // Finish transaction to allow buying again
-      });
-
-      // Build 16: Deep Reactive - Listen to ANY product changes
-      (this.store as any).when().product().updated((p: any) => {
-        console.log(`IAP: Product ${p.id} state updated to: ${p.state}`);
-      });
-
-      // Build 15: Reactive logic - Update product statuses periodically
-      this.store.ready(() => {
-        console.log('IAP: Store is READY');
-        this.isReady = true;
-      });
-
-      // Handle generic errors
-      this.store.error((err) => {
-        console.error('IAP Error: ' + JSON.stringify(err));
-      });
-
-      // Initialize and Sync - Multi-stage sync
-      (this.store as any).initialize();
-      this.store.update(); // Initial fetch
-      
-      console.log('IAP: Store initialization triggered correctly as singleton');
-    } catch (e) {
-      this.initialized = false;
-      console.error('IAP Init error:', e);
-    }
+    // 兜底方案：3秒后最后尝试一次
+    setTimeout(() => {
+      if (!this.initialized) {
+        console.log('IAP: Fallback retry...');
+        setupStore();
+      }
+    }, 3000);
   }
 
   /**

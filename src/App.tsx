@@ -12,8 +12,8 @@ import { useMana } from './hooks/use-mana';
 import type { DailyLog } from './hooks/use-mana';
 import './App.css';
 
-// Build 21: IAP 注册前置化，确保产品列表在 React 渲染前就载入内存
-iapUtils.init();
+// Build 21.1: 时序回归，不再使用顶级变量初始化，改为在 useEffect 中进行
+// iapUtils.init();
 
 type SortField = 'createdAt' | 'duration' | 'manual';
 type SortOrder = 'asc' | 'desc';
@@ -70,6 +70,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.body.dataset.theme = theme;
+    // Build 21.1: 恢复在挂载及主题切换时初始化 IAP
+    iapUtils.init();
   }, [theme]);
 
   const toggleTheme = () => {
@@ -217,7 +219,15 @@ const App: React.FC = () => {
           </button>
         </div>
         
-        <Reorder.Group axis="y" values={displayTasks} onReorder={setTasks} className="bubble-list-container">
+        <Reorder.Group 
+          axis="y" 
+          values={displayTasks} 
+          onReorder={(newOrder) => {
+            setTasks(newOrder);
+            setSortField('manual'); // Build 21.1: 拖拽时自动切换为手动模式，防止回弹
+          }} 
+          className="bubble-list-container"
+        >
           <AnimatePresence mode="popLayout">
             {displayTasks.map(task => (
               <Reorder.Item key={task.id} value={task}>
