@@ -1,0 +1,94 @@
+workflows:
+  ios-release:
+    name: iOS Release to TestFlight
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    
+    environment:
+      node: 22
+      xcode: latest
+      vars:
+        BUNDLE_ID: "com.qingning.mana"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.qingning.mana
+    
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+
+      - name: Build Web App
+        script: |
+          npm run build
+
+      - name: Sync Capacitor iOS
+        script: |
+          npx cap sync ios
+
+      - name: Set up code signing
+        script: |
+          keychain initialize
+
+      - name: Build iOS App
+        script: |
+          cd ios/App
+          
+          # Switch to manual signing
+          xcodebuild -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE="$CM_PROVISIONING_PROFILE" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM=D86M3VQGR2 \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        script: |
+          cd ios/App
+
+          cat > exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>D86M3VQGR2</string>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.qingning.mana</key>
+              <string>$CM_PROVISIONING_PROFILE</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/App.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist exportOptions.plist
+
+    artifacts:
+      - ios/App/build/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
