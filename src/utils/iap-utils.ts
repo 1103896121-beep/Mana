@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
 export const IAP_IDS = {
-  coffee: 'com.qingning.mana.iap.coffee',
+  coffee: 'com.qingning.mana.tip.coffee',
   lunch: 'com.qingning.mana.iap.lunch',
 };
 
