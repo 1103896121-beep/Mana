@@ -35,6 +35,18 @@ const App: React.FC = () => {
     getHistory
   } = useMana();
 
+  const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
+
+  // iOS 硬件激活：在第一次真实交互时解锁音频和内购
+  const handleGlobalInteraction = () => {
+    if (!hasUnlockedContext) {
+      soundUtils.init();
+      iapUtils.init();
+      setHasUnlockedContext(true);
+      console.log('Build 5: Global hardware interaction unlocked');
+    }
+  };
+
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const savedTheme = localStorage.getItem('mana_theme') as 'dark' | 'light';
     return savedTheme || 'dark';
@@ -119,8 +131,8 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div className="app-container" style={appStyle}>
-      <header className="mana-header apple-header">
+    <div className={`app-container ${activeTheme}`} data-theme={activeTheme} onPointerDown={handleGlobalInteraction} style={appStyle}>
+      <header className="app-header glass-panel">
         <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
           <div className="mana-header-main">
             <div className="mana-energy-vessel">
