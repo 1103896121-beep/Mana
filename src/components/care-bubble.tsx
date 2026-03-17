@@ -89,6 +89,7 @@ const CareBubble: React.FC<CareBubbleProps> = ({ message, onPop }) => {
           {phase !== 'burst' && (
             <motion.div
               className={`care-bubble ${phase === 'wobbling' ? 'wobbling' : ''}`}
+              style={{ pointerEvents: 'auto' }} /* Build 21: 确保泡泡本体可点击 */
               initial={{ y: 300, scale: 0.3, opacity: 0 }}
               animate={
                 phase === 'wobbling'

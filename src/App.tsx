@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { Plus, Moon, Sun, Trash2, Languages, BarChart2, Info } from 'lucide-react';
 import TaskBubble from './components/task-bubble';
@@ -12,6 +11,9 @@ import soundUtils from './utils/sound-utils';
 import { useMana } from './hooks/use-mana';
 import type { DailyLog } from './hooks/use-mana';
 import './App.css';
+
+// Build 21: IAP 注册前置化，确保产品列表在 React 渲染前就载入内存
+iapUtils.init();
 
 type SortField = 'createdAt' | 'duration' | 'manual';
 type SortOrder = 'asc' | 'desc';
@@ -39,19 +41,15 @@ const App: React.FC = () => {
 
   const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
 
-  // iOS 硬件激活闸门：在第一次真实手势时彻底开启所有限制
+  // iOS 硬件激活闸门：在第一次真实手势时开启音频上下文
   const handleGlobalInteraction = () => {
     if (!hasUnlockedContext) {
-      console.log('Build 11: Final Hardware Unlock Gate triggered');
+      console.log('Build 21: Hardware Unlock Gate triggered');
       soundUtils.init();
-      iapUtils.init();
+      // iapUtils.init() 已移动到顶级，此处不再重复调用
       setHasUnlockedContext(true);
     }
   };
-
-  useEffect(() => {
-    iapUtils.init();
-  }, []);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const savedTheme = localStorage.getItem('mana_theme') as 'dark' | 'light';
@@ -72,8 +70,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.body.dataset.theme = theme;
-    // 静默初始化商店
-    iapUtils.init();
   }, [theme]);
 
   const toggleTheme = () => {
@@ -151,7 +147,7 @@ const App: React.FC = () => {
             </button>
             <button className="theme-toggle action-icon-btn utility-btn" onClick={() => {
               setShowAbout(true);
-              iapUtils.forceSync(); // Build 17: Proactive sync when opening tip jar
+              iapUtils.forceSync(); 
             }} title={t('about.title')}>
               <Info size={20} />
             </button>
@@ -175,14 +171,13 @@ const App: React.FC = () => {
 
       <main className="task-viewport">
         <AnimatePresence>
-          {showInput && createPortal(
+          {showInput && (
             <motion.div 
               className="panel-overlay" 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               onClick={() => setShowInput(false)}
-              style={{ zIndex: 9999 }}
             >
               <motion.div 
                 initial={{ y: 20, opacity: 0 }} 
@@ -204,8 +199,7 @@ const App: React.FC = () => {
                 </div>
                 <button className="confirm-add-btn" onClick={addTask}>{t('taskViewport.establishBtn')}</button>
               </motion.div>
-            </motion.div>,
-            document.body
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -239,8 +233,8 @@ const App: React.FC = () => {
       <CareBubble message={careMessage} onPop={() => setCareMessage(null)} />
 
       <AnimatePresence>
-        {confirmAction && createPortal(
-          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmAction(null)} style={{ zIndex: 9999 }}>
+        {confirmAction && (
+          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmAction(null)}>
             <motion.div className="confirm-modal glass-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
               <h3>{confirmAction.type === 'single' ? t('common.confirmDelete') : t('common.clearExpired')}</h3>
               <p>{confirmAction.type === 'single' ? t('deleteConfirm') : t('clearConfirm')}</p>
@@ -249,17 +243,16 @@ const App: React.FC = () => {
                 <button className="confirm-delete-btn" onClick={confirmDelete}>{confirmAction.type === 'single' ? t('common.dissolve') : t('common.clear')}</button>
               </div>
             </motion.div>
-          </motion.div>,
-          document.body
+          </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {showAbout && createPortal(
-          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAbout(false)} style={{ zIndex: 9999 }}>
-            <motion.div className="confirm-modal glass-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
+        {showAbout && (
+          <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAbout(false)}>
+            <motion.div className="confirm-modal glass-panel about-panel" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()}>
               <h3>{t('about.title')}</h3>
-              <div style={{ textAlign: 'left', marginTop: '8px', marginBottom: '16px' }}>
+              <div className="about-content" style={{ textAlign: 'left', marginTop: '8px', marginBottom: '16px' }}>
                 <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontSize: '1rem' }}>{t('about.privacyTitle')}</h4>
                 <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: 'var(--color-text-muted)', textAlign: 'left', margin: 0 }}>{t('about.privacyText')}</p>
               </div>
@@ -301,8 +294,7 @@ const App: React.FC = () => {
                 <button className="cancel-btn" style={{ width: '100%', flex: 'none' }} disabled={isPurchasing} onClick={() => setShowAbout(false)}>{t('about.close')}</button>
               </div>
             </motion.div>
-          </motion.div>,
-          document.body
+          </motion.div>
         )}
       </AnimatePresence>
 

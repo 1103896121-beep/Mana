@@ -1,14 +1,14 @@
 .care-bubble-overlay {
-  position: absolute; /* Changed from fixed to absolute to obey .app-container overflow:hidden */
+  position: absolute; 
   inset: 0;
   z-index: 5000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 80px;
-  pointer-events: auto;
+  pointer-events: none; /* Build 21: 防止透明遮罩拦截主界面点击 */
   background: transparent;
-  overflow: hidden; /* 确保所有碎片不超出屏幕边界 */
+  overflow: hidden; 
 }
 
 /* 膨胀阶段的视觉抖动反馈 */
