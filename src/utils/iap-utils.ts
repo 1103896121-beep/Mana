@@ -104,7 +104,7 @@ class IAPUtils {
       });
 
       // Initialize for Apple App Store (v13 requirements)
-      this.store.initialize([this.store.APPLE_APPSTORE]);
+      (this.store as any).initialize();
       this.store.update();
     } catch (e) {
       console.error('IAP Init error:', e);
