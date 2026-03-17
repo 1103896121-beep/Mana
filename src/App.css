@@ -231,11 +231,7 @@
     0 30px 60px rgba(0, 0, 0, 0.6),
     0 0 0 0.5px rgba(255, 255, 255, 0.1);
   transition: var(--transition-smooth);
-  position: absolute;
-  top: min(15vh, 120px); /* 视口百分比加像素上限，防止过低 */
   width: min(92%, 400px); 
-  left: 50%;
-  transform: translateX(-50%);
   z-index: 150;
   background: rgba(var(--color-bg-primary-rgb), 0.95); /* 使用变量并增加不透明度 */
 }

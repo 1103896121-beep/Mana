@@ -168,9 +168,21 @@ const App: React.FC = () => {
       <main className="task-viewport">
         <AnimatePresence>
           {showInput && (
-            <>
-              <motion.div className="panel-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowInput(false)} />
-              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="quick-add-panel glass-panel elevated">
+            <motion.div 
+              className="panel-overlay" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowInput(false)}
+              style={{ zIndex: 2000 }}
+            >
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }} 
+                animate={{ y: 0, opacity: 1 }} 
+                exit={{ y: 20, opacity: 0 }} 
+                className="quick-add-panel glass-panel elevated"
+                onClick={e => e.stopPropagation()}
+              >
                 <div className="input-field">
                   <input autoFocus type="text" placeholder={t('taskViewport.placeholder')} maxLength={50} value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} />
                 </div>
@@ -184,7 +196,7 @@ const App: React.FC = () => {
                 </div>
                 <button className="confirm-add-btn" onClick={addTask}>{t('taskViewport.establishBtn')}</button>
               </motion.div>
-            </>
+            </motion.div>
           )}
         </AnimatePresence>
 
