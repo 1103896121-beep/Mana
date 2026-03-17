@@ -94,19 +94,22 @@ class IAPUtils {
         receipt.finish(); // Finish transaction to allow buying again
       });
 
+      // Build 13: Enhanced Ready & Update Lifecycle
+      this.store.ready(() => {
+        console.log('IAP: Store is READY');
+        this.isReady = true;
+      });
+
       // Handle generic errors
       this.store.error((err) => {
         console.error('IAP Error: ' + JSON.stringify(err));
       });
 
-      this.store.ready(() => {
-        this.isReady = true;
-      });
-
-      // Build 10: Force v13 Init sequence
+      // Initialize and Sync
       (this.store as any).initialize();
-      this.store.update();
-      console.log('IAP: Store initialization triggered');
+      this.store.update(); // Trigger initial product fetch
+      
+      console.log('IAP: Store initialization triggered with Update');
     } catch (e) {
       console.error('IAP Init error:', e);
     }
