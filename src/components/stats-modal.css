@@ -9,11 +9,9 @@
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overscroll-behavior: contain; /* 阻断弹性滚动 */
+  display: block; /* 移除 flex 干扰 */
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 [data-theme='light'] .stats-overlay {
@@ -21,7 +19,11 @@
 }
 
 .stats-modal {
-  width: 100%;
+  position: absolute; /* 绝对坐标锁死 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 物理锁定中心 */
+  width: calc(100% - 40px);
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
