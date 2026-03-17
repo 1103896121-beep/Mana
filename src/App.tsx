@@ -38,18 +38,17 @@ const App: React.FC = () => {
 
   const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
 
-  // iOS 硬件激活：在第一次真实交互时解锁音频和内购
+  // iOS 硬件激活闸门：在第一次真实手势时彻底开启所有限制
   const handleGlobalInteraction = () => {
     if (!hasUnlockedContext) {
+      console.log('Build 11: Final Hardware Unlock Gate triggered');
       soundUtils.init();
       iapUtils.init();
       setHasUnlockedContext(true);
-      console.log('Build 10: Global hardware gateway activated');
     }
   };
 
   useEffect(() => {
-    // 冗余初始化
     iapUtils.init();
   }, []);
 

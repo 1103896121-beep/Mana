@@ -132,10 +132,14 @@ class IAPUtils {
 
     try {
       const product = this.store.get(productId);
+      
+      // Build 11 Debug: 显式提示产品加载状态
       if (!product) {
-        console.error('IAP: Product not found:', productId);
+        alert(`IAP Error: Product ${productId} not loaded from App Store yet. Please wait or check internet.`);
         return false;
       }
+
+      console.log('IAP Attempting purchase for:', product.id, 'State:', product.state);
 
       // v13 Standard API: Use order() from the default offer
       const offer = (product as any).getOffer();
@@ -144,14 +148,19 @@ class IAPUtils {
         return true;
       }
 
-      // Fallback to requestPayment if offer is missing (unlikely in v13)
+      // Fallback: If offer is missing, trying requestPayment
       const error = await (this.store as any).requestPayment({
         id: productId,
         platform: 'apple-appstore'
       });
       
-      return !error;
-    } catch (e) {
+      if (error) {
+        alert(`IAP Payment Error: ${error.message}`);
+        return false;
+      }
+      return true;
+    } catch (e: any) {
+      alert(`IAP Exception: ${e.message || e}`);
       console.error('IAP purchase error:', e);
       return false;
     }

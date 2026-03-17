@@ -105,10 +105,20 @@ body {
   background-color: #1c1c1e;
   background-image: radial-gradient(circle at 50% 50%, rgba(0, 122, 255, 0.05) 0%, transparent 50%);
   color: var(--color-text-main);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block; /* 移除居中，防止干扰 fixed 定位 */
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 767px) {
+  body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
 }
 
 .app-container {
@@ -126,18 +136,19 @@ body {
   flex-shrink: 0;
 }
 
-/* 仅在桌面或大屏幕上显示为模拟手机框 */
-@media (min-width: 768px) {
+/* 移动端特定优化：强制铺满 */
+@media (max-width: 767px) {
   .app-container {
-    width: 430px;
-    height: 90vh;
-    max-height: 932px;
-    margin: 20px auto;
-    border-radius: 44px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
-    padding-top: 0;
-    padding-bottom: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
   }
 }
 
