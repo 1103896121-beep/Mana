@@ -38,29 +38,19 @@ const App: React.FC = () => {
 
   const [hasUnlockedContext, setHasUnlockedContext] = useState(false);
 
-  useEffect(() => {
-    // iOS 终极硬件激活策略：使用 window 级别的原生 touchstart 以获得最高优先级
-    const unlock = () => {
-      console.log('Build 7: System-level touch detected, unlocking hardware...', hasUnlockedContext);
+  // iOS 硬件激活：在第一次真实交互时解锁音频和内购
+  const handleGlobalInteraction = () => {
+    if (!hasUnlockedContext) {
       soundUtils.init();
       iapUtils.init();
       setHasUnlockedContext(true);
-      
-      // 解锁后移除，防止性能消耗
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('click', unlock);
-    };
+      console.log('Build 10: Global hardware gateway activated');
+    }
+  };
 
-    window.addEventListener('touchstart', unlock);
-    window.addEventListener('click', unlock);
-    
-    // 初始化内购
+  useEffect(() => {
+    // 冗余初始化
     iapUtils.init();
-
-    return () => {
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('click', unlock);
-    };
   }, []);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -147,7 +137,7 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div className={`app-container ${theme}`} data-theme={theme} style={appStyle}>
+    <div className={`app-container ${theme}`} data-theme={theme} onPointerDown={handleGlobalInteraction} style={appStyle}>
       <header className="app-header glass-panel">
         <div className={`header-top ${language === 'en' ? 'layout-en' : ''}`}>
           <div className="mana-header-main">

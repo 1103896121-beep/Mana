@@ -103,9 +103,10 @@ class IAPUtils {
         this.isReady = true;
       });
 
-      // Initialize for Apple App Store (v13 requirements)
+      // Build 10: Force v13 Init sequence
       (this.store as any).initialize();
       this.store.update();
+      console.log('IAP: Store initialization triggered');
     } catch (e) {
       console.error('IAP Init error:', e);
     }
