@@ -94,7 +94,7 @@ class IAPUtils {
         receipt.finish(); // Finish transaction to allow buying again
       });
 
-      // Build 13: Enhanced Ready & Update Lifecycle
+      // Build 15: Reactive logic - Update product statuses periodically
       this.store.ready(() => {
         console.log('IAP: Store is READY');
         this.isReady = true;
@@ -105,11 +105,18 @@ class IAPUtils {
         console.error('IAP Error: ' + JSON.stringify(err));
       });
 
-      // Initialize and Sync
+      // Initialize and Sync - Multi-stage sync
       (this.store as any).initialize();
-      this.store.update(); // Trigger initial product fetch
+      this.store.update(); // Initial fetch
       
-      console.log('IAP: Store initialization triggered with Update');
+      // Build 15: Background interval to keep product context active in dev/TF
+      setInterval(() => {
+        if (this.store) {
+          this.store.update(); 
+        }
+      }, 10000); // Sync every 10s to keep registry alive
+      
+      console.log('IAP: Store initialization triggered with background sync');
     } catch (e) {
       console.error('IAP Init error:', e);
     }
