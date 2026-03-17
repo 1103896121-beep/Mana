@@ -15,23 +15,23 @@ class SoundUtils {
   }
 
   public init() {
-    // iOS 终极解锁：context 必须在 user-gesture 回调中 NEW 出来
-    if (!this.audioCtx || this.audioCtx.state === 'closed') {
-      const unlock = () => {
-        // 只有真的没有或者被关闭了才 NEW
-        if (!this.audioCtx || this.audioCtx.state === 'closed') {
-          this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          console.log('AudioContext created/resumed via gesture');
-        } else if (this.audioCtx.state === 'suspended') {
-          this.audioCtx.resume();
-        }
-        
-        // 解锁后移除监听
-        window.removeEventListener('click', unlock);
-        window.removeEventListener('touchstart', unlock);
-      };
-      window.addEventListener('click', unlock);
-      window.addEventListener('touchstart', unlock);
+    try {
+      if (!this.audioCtx || this.audioCtx.state === 'closed') {
+        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+
+      // iOS 物理激活补帧: 播放一个静音 Buffer 以强制触发硬件单元开启
+      const buffer = this.audioCtx.createBuffer(1, 1, 22050);
+      const source = this.audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.audioCtx.destination);
+      source.start(0);
+    } catch (e) {
+      console.error('Sound Init Error:', e);
     }
   }
 
