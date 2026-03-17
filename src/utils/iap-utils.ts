@@ -103,8 +103,8 @@ class IAPUtils {
         this.isReady = true;
       });
 
-      // Initialize and then update to fetch product info
-      this.store.initialize();
+      // Initialize for Apple App Store (v13 requirements)
+      this.store.initialize([this.store.APPLE_APPSTORE]);
       this.store.update();
     } catch (e) {
       console.error('IAP Init error:', e);

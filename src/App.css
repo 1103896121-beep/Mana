@@ -229,11 +229,12 @@
   margin-bottom: var(--spacing-lg);
   box-shadow: 
     0 30px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 0.5px rgba(255, 255, 255, 0.2); /* 亮色微边 */
+    0 0 0 0.5px rgba(255, 255, 255, 0.2);
   transition: var(--transition-smooth);
-  width: min(92%, 400px); 
+  width: 92%; /* 移动端默认自适应 */
+  max-width: 500px; /* 大屏上限 */
   z-index: 150;
-  background: rgba(40, 40, 42, 0.9); /* 回归 Build 5 的半透明质感 */
+  background: rgba(40, 40, 42, 0.95);
 }
 
 [data-theme='light'] .quick-add-panel {
