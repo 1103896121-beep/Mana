@@ -230,9 +230,9 @@
 }
 
 .detail-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 24px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 20px;
@@ -241,25 +241,27 @@
 
 .stat-vessel {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* 使内部靠两端对齐，保证底部数值处于同一水平线 */
-  gap: 6px;
-  height: 100%; /* 确保撑满网格单元格 */
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .stat-vessel label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .stat-vessel p {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-white);
+  white-space: nowrap;
 }
 
 /* 亮色模式：详情弹窗修复 */

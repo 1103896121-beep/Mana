@@ -131,7 +131,9 @@ class IAPUtils {
     }
 
     try {
-      const product = this.store.get(productId);
+      // Build 12: Robust product lookup to fix "this.store.get is not a function"
+      const store = this.store as any;
+      const product = store?.get ? store.get(productId) : (window as any).CdvPurchase?.store?.get(productId);
       
       // Build 11 Debug: 显式提示产品加载状态
       if (!product) {
