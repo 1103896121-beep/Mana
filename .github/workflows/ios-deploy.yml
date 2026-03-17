@@ -57,9 +57,6 @@ jobs:
           platform :ios do
             desc "Build and upload to TestFlight"
             lane :beta do
-              # Configure CI keychain for headless codesigning
-              setup_ci
-
               api_key = app_store_connect_api_key(
                 key_id: ENV["APPSTORE_KEY_ID"],
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
@@ -83,25 +80,18 @@ jobs:
               end
               UI.success("All Distribution certificates revoked. Creating fresh one...")
 
-              # Generate a brand new distribution certificate (into the CI keychain)
+              # Generate a brand new distribution certificate (into our custom keychain)
               get_certificates(
                 api_key: api_key,
-                keychain_path: ENV["MATCH_KEYCHAIN_PATH"],
-                keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
+                keychain_path: ENV["KEYCHAIN_PATH"],
+                keychain_password: ENV["KEYCHAIN_PASSWORD"]
               )
-
-              # Fix keychain partition list to allow codesign access without UI prompt
-              kc_path = ENV["MATCH_KEYCHAIN_PATH"]
-              kc_pw = ENV["MATCH_KEYCHAIN_PASSWORD"]
-              sh("security", "set-key-partition-list", "-S", "apple-tool:,apple:,codesign:", "-s", "-k", kc_pw, kc_path)
-              sh("security", "find-identity", "-v", "-p", "codesigning")
 
               # Fetch provisioning profile
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana")
 
               profile_uuid = lane_context[SharedValues::SIGH_UUID]
               profile_name = lane_context[SharedValues::SIGH_NAME]
-              keychain_path = ENV["MATCH_KEYCHAIN_PATH"] || "~/Library/Keychains/login.keychain-db"
 
               # Switch project to manual signing for CI
               update_code_signing_settings(
@@ -116,7 +106,7 @@ jobs:
                 project: "App.xcodeproj",
                 scheme: "App",
                 export_method: "app-store",
-                xcargs: "CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE='#{profile_uuid}' CODE_SIGN_IDENTITY='Apple Distribution' DEVELOPMENT_TEAM=D86M3VQGR2 CODE_SIGN_KEYCHAIN='#{keychain_path}'"
+                xcargs: "CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE='#{profile_uuid}' CODE_SIGN_IDENTITY='Apple Distribution' DEVELOPMENT_TEAM=D86M3VQGR2 CODE_SIGN_KEYCHAIN='#{ENV["KEYCHAIN_PATH"]}'"
               )
 
               upload_to_testflight(
@@ -128,6 +118,32 @@ jobs:
           FASTFILE_EOF
           echo "--- Content of generated Fastfile ---"
           cat fastlane/Fastfile
+
+      - name: Setup Build Keychain
+        run: |
+          # Create a keychain with a NON-EMPTY password (critical for set-key-partition-list)
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD="ci_build_2026"
+
+          # Create and configure keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Add new keychain to search list (KEEP existing keychains too)
+          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+
+          # Set as default keychain
+          security default-keychain -s "$KEYCHAIN_PATH"
+
+          echo "--- Keychain search list ---"
+          security list-keychains -d user
+
+          # Export for Fastlane
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+          echo "MATCH_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "MATCH_KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
 
       - name: Build and Upload with Fastlane
         env:
