@@ -1,3 +1,9 @@
+# Mana App (Fix: Layout, Sound, IAP)
+
+This repository contains the Mana App. The most recent version on TestFlight includes several critical fixes for layout, sound, and IAP.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
