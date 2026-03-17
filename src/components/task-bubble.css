@@ -155,17 +155,16 @@
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  z-index: 2000;
-  display: block; /* 移除 flex 干扰 */
+  z-index: 9999; /* 极大 z-index 确保在 Portal 中置顶 */
+  display: flex; /* 回归 Flex 居中，这是最稳健的方案 */
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  touch-action: none; /* 遮罩层禁止手势 */
+  touch-action: none;
 }
 
 .detail-modal {
-  position: absolute; /* 绝对坐标锁死 */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* 锁定中心 */
+  position: relative; /* 配合 Portal，不再需要 absolute 锁死 */
   width: calc(100% - 40px);
   max-width: 400px;
   box-sizing: border-box;
@@ -179,7 +178,7 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(255, 255, 255, 0.03);
   overflow-x: hidden;
   overflow-y: auto;
-  touch-action: pan-y; /* 仅允许上下滑动 */
+  touch-action: pan-y;
 }
 
 .detail-header {

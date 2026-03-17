@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../hooks/use-translation';
@@ -112,10 +113,11 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({
         {/* 气泡爆炸舞台被移除，仅保留音效反馈 */}
       </motion.div>
 
-      {/* 详情弹窗 */}
-      <AnimatePresence>
-        {showDetailModal && (
+      {/* 详情弹窗 - 使用 Portal 传送门解决 iOS transform 嵌套导致的定位失效问题 */}
+      {showDetailModal && createPortal(
+        <AnimatePresence mode="wait">
           <motion.div
+            key="detail-portal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -155,8 +157,9 @@ const TaskBubble: React.FC<TaskBubbleProps> = ({
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };

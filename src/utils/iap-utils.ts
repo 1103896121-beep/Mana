@@ -49,6 +49,7 @@ interface CdvPurchaseStore {
 
 class IAPUtils {
   private store: CdvPurchaseStore | null = null;
+  private initialized = false;
   public isReady = false;
 
   /**
@@ -57,7 +58,11 @@ class IAPUtils {
    */
   public init(): void {
     if (!Capacitor.isNativePlatform()) {
-      // Mocking store for web/PWA
+      return;
+    }
+
+    if (this.initialized) {
+      console.log('IAP: Already initialized');
       return;
     }
     
@@ -69,6 +74,7 @@ class IAPUtils {
     }
 
     this.store = globalStore;
+    this.initialized = true;
 
     // Register consumable products (CdvPurchase v13+)
     try {
@@ -114,9 +120,20 @@ class IAPUtils {
       (this.store as any).initialize();
       this.store.update(); // Initial fetch
       
-      console.log('IAP: Store initialization triggered with background sync listeners');
+      console.log('IAP: Store initialization triggered correctly as singleton');
     } catch (e) {
+      this.initialized = false;
       console.error('IAP Init error:', e);
+    }
+  }
+
+  /**
+   * 强制同步。在内购设置面板打开时通过本接口可以唤醒注册。
+   */
+  public forceSync(): void {
+    if (this.store) {
+      console.log('IAP: Force synchronization triggered');
+      this.store.update();
     }
   }
 

@@ -148,7 +148,10 @@ const App: React.FC = () => {
             <button className="language-toggle action-icon-btn utility-btn" onClick={toggleLanguage}>
               <Languages size={20} />
             </button>
-            <button className="theme-toggle action-icon-btn utility-btn" onClick={() => setShowAbout(true)} title={t('about.title')}>
+            <button className="theme-toggle action-icon-btn utility-btn" onClick={() => {
+              setShowAbout(true);
+              iapUtils.forceSync(); // Build 17: Proactive sync when opening tip jar
+            }} title={t('about.title')}>
               <Info size={20} />
             </button>
             <button className="theme-toggle action-icon-btn utility-btn" onClick={toggleTheme}>
