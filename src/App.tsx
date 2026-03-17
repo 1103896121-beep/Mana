@@ -41,7 +41,7 @@ const App: React.FC = () => {
   useEffect(() => {
     // iOS 终极硬件激活策略：使用 window 级别的原生 touchstart 以获得最高优先级
     const unlock = () => {
-      console.log('Build 7: System-level touch detected, unlocking hardware...');
+      console.log('Build 7: System-level touch detected, unlocking hardware...', hasUnlockedContext);
       soundUtils.init();
       iapUtils.init();
       setHasUnlockedContext(true);
