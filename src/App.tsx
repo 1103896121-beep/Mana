@@ -226,9 +226,11 @@ const App: React.FC = () => {
           axis="y" 
           values={displayTasks} 
           onReorder={(newOrder) => {
-            // Build 29: 严格按顺序执行：先同步切换为手动模式，再更新数据源
-            setSortField('manual');
-            setTasks(newOrder);
+            // Build 30: 极端锁定策略，确保在渲染新顺序前排序模式已变为 manual
+            if (sortField !== 'manual') {
+              setSortField('manual');
+            }
+            setTasks([...newOrder]); // 使用浅拷贝强制触发更新
           }} 
           className="bubble-list-container"
         >

@@ -87,6 +87,7 @@ class IAPUtils {
       this.store = store;
 
       try {
+        console.log('IAP: Starting store registration');
         const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
         const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
 
@@ -95,32 +96,44 @@ class IAPUtils {
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
         ]);
 
-        store.when().approved((t: any) => t.verify());
-        store.when().verified((r: any) => r.finish());
+        store.when().approved((t: any) => {
+          console.log('IAP: Approved', t.id);
+          t.verify();
+        });
+        
+        store.when().verified((r: any) => {
+          console.log('IAP: Verified');
+          r.finish();
+        });
+
         store.when().product().updated((p: any) => {
-          console.log(`IAP: Product ${p.id} state: ${p.state}`);
+          console.log(`IAP: Product ${p.id} -> ${p.state}`);
         });
 
         store.ready(() => {
-          console.log('IAP: Store READY');
+          console.log('IAP: Store READY callback');
           this.isReady = true;
-          store.update();
+          try { store.update(); } catch(e) {}
         });
 
         store.error((err: any) => {
-          console.error('IAP Error:', JSON.stringify(err));
+          console.error('IAP Store Error:', JSON.stringify(err));
         });
 
-        // v13 初始化
-        console.log('IAP: Calling initialize...');
-        store.initialize([pPlatform]);
+        // Build 30: 极其保守的初始化调用
+        console.log('IAP: Initializing for platform:', pPlatform);
+        if (store.initialize) {
+          store.initialize([pPlatform]);
+        }
         
         this.initialized = true;
-        console.log('IAP: Setup completed successfully');
-      } catch (e) {
+        console.log('IAP: Setup success');
+      } catch (e: any) {
         console.error('IAP Setup Exception:', e);
+        // Build 30 Diagnostic: 让错误无处遁形
+        alert(`IAP Setup Crashed: ${e.message || e}\nTrace: ${e.stack ? e.stack.split('\n')[0] : 'No stack'}`);
         if (this.initRetryCount < this.maxRetries) {
-          setTimeout(attemptSetup, 1000);
+          setTimeout(attemptSetup, 2000); // 延长重试间隔
         }
       }
     };
