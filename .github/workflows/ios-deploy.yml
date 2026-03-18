@@ -99,6 +99,11 @@ jobs:
               # Fetch provisioning profile (forced refresh to ensure IAP capability is included)
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana", force: true)
 
+              profile_path = lane_context[SharedValues::SIGH_PROFILE_PATH]
+              UI.message("--- Inspecting downloaded profile entitlements ---")
+              sh("security cms -D -i '#{profile_path}' | awk '/<key>Entitlements<\\/key>/{flag=1; print; next} /<\\/dict>/{if(flag){print; flag=0; next}} flag'")
+              UI.message("------------------------------------------------")
+
               profile_uuid = lane_context[SharedValues::SIGH_UUID]
               profile_name = lane_context[SharedValues::SIGH_NAME]
 
