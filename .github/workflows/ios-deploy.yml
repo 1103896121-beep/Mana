@@ -80,6 +80,26 @@ jobs:
               end
               UI.success("All Distribution certificates revoked. Creating fresh one...")
 
+              # Forcefully enable In-App Purchase capability on the App ID itself
+              UI.message("Ensuring App ID has IN_APP_PURCHASE capability enabled...")
+              app = Spaceship::ConnectAPI::BundleId.find("com.qingning.mana")
+              if app
+                app.update(attributes: {
+                  seedId: app.seed_id,
+                  identifier: app.identifier,
+                  name: app.name
+                })
+                # Using enable_service on the classic developer portal API (since Connect API is complex for capabilities)
+                Spaceship::Portal.login(ENV["APPSTORE_ISSUER_ID"], ENV["APPSTORE_KEY_ID"]) rescue nil # Fallback if needed
+                begin
+                   app_portal = Spaceship::Portal::App.find("com.qingning.mana")
+                   app_portal.update_service(Spaceship::Portal::AppService::InAppPurchase.on)
+                   UI.success("In-App Purchase capability forcefully enabled on App ID")
+                rescue => e
+                   UI.message("Could not auto-enable IAP capability via Portal API (might already be enabled): #{e}")
+                end
+              end
+
               # Generate a brand new distribution certificate (into our custom keychain)
               get_certificates(
                 api_key: api_key,
