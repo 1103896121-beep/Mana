@@ -71,7 +71,11 @@ const App: React.FC = () => {
   // Build 29: 确保 IAP 仅在组件挂载时初始化一次，不再受主题切换干扰
   useEffect(() => {
     iapUtils.init();
-  }, []);
+    iapUtils.onPurchaseSuccess = () => {
+      alert(t('tipJar.success'));
+      setShowAbout(false);
+    };
+  }, [t]);
 
   useEffect(() => {
     document.body.dataset.theme = theme;
@@ -283,9 +287,8 @@ const App: React.FC = () => {
                     disabled={isPurchasing}
                     onClick={async () => {
                       setIsPurchasing(true);
-                      const success = await iapUtils.purchase(IAP_IDS.coffee);
+                      await iapUtils.purchase(IAP_IDS.coffee);
                       setIsPurchasing(false);
-                      if (success) alert(t('tipJar.success'));
                     }}
                   >
                     ☕ {t('tipJar.coffee')} <span>{t('tipJar.coffeePrice')}</span>
@@ -295,9 +298,8 @@ const App: React.FC = () => {
                     disabled={isPurchasing}
                     onClick={async () => {
                       setIsPurchasing(true);
-                      const success = await iapUtils.purchase(IAP_IDS.lunch);
+                      await iapUtils.purchase(IAP_IDS.lunch);
                       setIsPurchasing(false);
-                      if (success) alert(t('tipJar.success'));
                     }}
                   >
                     🍔 {t('tipJar.lunch')} <span>{t('tipJar.lunchPrice')}</span>

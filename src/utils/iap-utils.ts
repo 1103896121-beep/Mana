@@ -57,6 +57,7 @@ class IAPUtils {
   public isReady = false;
   private initRetryCount = 0;
   private maxRetries = 20; // 500ms * 20 = 10s
+  public onPurchaseSuccess?: () => void;
 
   /**
    * 初始化商店插件
@@ -110,6 +111,9 @@ class IAPUtils {
           when.verified((r: any) => {
             console.log('IAP: Verified');
             r.finish();
+            if (this.onPurchaseSuccess) {
+              this.onPurchaseSuccess();
+            }
           });
         }
 
