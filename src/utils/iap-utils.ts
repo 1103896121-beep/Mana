@@ -90,9 +90,9 @@ class IAPUtils {
         const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
         const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
         
-        console.log(`IAP: Registering products on platform: ${pPlatform}`);
+        console.log(`IAP: Initializing v13 with products on ${pPlatform}`);
 
-        // Build 33: 合并为单一注册调用，严格尊崇 v13 协议
+        // Build 34: 极其简洁的注册方式，减少干扰
         store.register([
           { id: IAP_IDS.coffee, type: pType, platform: pPlatform },
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
@@ -116,9 +116,11 @@ class IAPUtils {
         store.ready(() => {
           console.log('IAP: Store READY');
           this.isReady = true;
-          // Build 33: 深度打印内存中的产品数量
           const pList = store.products || [];
-          console.log(`IAP: Ready! Total products in memory: ${pList.length}`);
+          console.log(`IAP: Store Ready! ${pList.length} products found in memory.`);
+          // Build 34: 如果注册为 NONE，打印内存中所有产品的 ID 和状态供最终诊断
+          pList.forEach((p: any) => console.log(`IAP DEBUG: Product ${p.id} state: ${p.state}`));
+          
           if (store.update) {
             try { store.update(); } catch(e) {}
           }
@@ -126,19 +128,17 @@ class IAPUtils {
 
         if (store.error) {
           store.error((err: any) => {
-            console.error('IAP Store Global Error:', JSON.stringify(err));
+            console.error('IAP Store Error:', JSON.stringify(err));
           });
         }
 
-        // Build 33: v13 初始化
-        console.log('IAP: Calling initialize with platform array');
+        console.log('IAP: Starting initialization sequence');
         if (typeof store.initialize === 'function') {
-          // 在 v13 中 initialize 返回一个 Promise 数组
           store.initialize([pPlatform]);
         }
         
         this.initialized = true;
-        console.log('IAP: Setup sequence finished');
+        console.log('IAP: Setup complete');
       } catch (e: any) {
         console.error('IAP Setup Exception:', e);
         if (this.initRetryCount < this.maxRetries) {
