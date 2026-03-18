@@ -87,6 +87,15 @@ jobs:
                 keychain_password: ENV["KEYCHAIN_PASSWORD"]
               )
 
+              # Delete existing profiles to force regeneration with new capabilities
+              profiles = Spaceship::ConnectAPI::Profile.all
+              profiles.each do |profile|
+                if profile.name.include?("com.qingning.mana") || profile.bundle_id == "com.qingning.mana"
+                  UI.message("Deleting profile: #{profile.name} to refresh capabilities")
+                  profile.delete!
+                end
+              end
+              
               # Fetch provisioning profile (forced refresh to ensure IAP capability is included)
               get_provisioning_profile(api_key: api_key, app_identifier: "com.qingning.mana", force: true)
 
