@@ -5,7 +5,7 @@ Welcome to the Mana Support Page. We are here to help you get the best out of yo
 ## Contact Us
 If you encounter any issues, have suggestions, or just want to say hi, please feel free to reach out to us. We regularly monitor this inbox and will get back to you as soon as possible.
 
-**Support Email:** [Insert Developer Email Here]
+**Support Email:** 1103896121@qq.com
 **GitHub Issues:** [https://github.com/1103896121-beep/Mana/issues](https://github.com/1103896121-beep/Mana/issues)
 
 ## FAQ
@@ -24,7 +24,7 @@ A: Thank you for helping us improve Mana! Please email us with a description of 
 ## 联系我们
 如果您在使用过程中遇到任何问题、有任何建议，欢迎随时联系我们。我们会定期查看收件箱并尽快给您回复。
 
-**支持邮箱：** [请填入您的开发者邮箱，例如：support@mana-app.com]
+**支持邮箱：** 1103896121@qq.com
 **GitHub 问题反馈：** [https://github.com/1103896121-beep/Mana/issues](https://github.com/1103896121-beep/Mana/issues)
 
 ## 常见问题解答 (FAQ)
