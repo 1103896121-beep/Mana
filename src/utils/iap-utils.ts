@@ -90,21 +90,12 @@ class IAPUtils {
         const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
         const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
         
-        // Build 32: 打印所有可用平台以作后续诊断
-        const availablePlatforms = CdvPurchase?.Platform ? Object.keys(CdvPurchase.Platform).join(', ') : 'unknown';
-        console.log(`IAP: Available platforms in plugin: [${availablePlatforms}]`);
-        console.log(`IAP: Using platform constant: ${pPlatform}`);
+        console.log(`IAP: Registering products on platform: ${pPlatform}`);
 
-        // Build 32: 两阶段注册策略
-        // 1. 带平台标识符注册
+        // Build 33: 合并为单一注册调用，严格尊崇 v13 协议
         store.register([
           { id: IAP_IDS.coffee, type: pType, platform: pPlatform },
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
-        ]);
-        // 2. 盲投注册（不带平台，由插件自行决定）
-        store.register([
-          { id: IAP_IDS.coffee, type: pType },
-          { id: IAP_IDS.lunch, type: pType }
         ]);
 
         const when = store.when();
@@ -125,9 +116,9 @@ class IAPUtils {
         store.ready(() => {
           console.log('IAP: Store READY');
           this.isReady = true;
-          // Build 32: 检查注册后的内存状态
+          // Build 33: 深度打印内存中的产品数量
           const pList = store.products || [];
-          console.log(`IAP: Ready! Registered products in memory: ${pList.length}`);
+          console.log(`IAP: Ready! Total products in memory: ${pList.length}`);
           if (store.update) {
             try { store.update(); } catch(e) {}
           }
@@ -135,22 +126,21 @@ class IAPUtils {
 
         if (store.error) {
           store.error((err: any) => {
-            console.error('IAP Store Error:', JSON.stringify(err));
+            console.error('IAP Store Global Error:', JSON.stringify(err));
           });
         }
 
-        console.log('IAP: Initializing...');
+        // Build 33: v13 初始化
+        console.log('IAP: Calling initialize with platform array');
         if (typeof store.initialize === 'function') {
+          // 在 v13 中 initialize 返回一个 Promise 数组
           store.initialize([pPlatform]);
-        } else if (CdvPurchase?.store?.initialize) {
-          CdvPurchase.store.initialize([pPlatform]);
         }
         
         this.initialized = true;
-        console.log('IAP: Setup success');
+        console.log('IAP: Setup sequence finished');
       } catch (e: any) {
         console.error('IAP Setup Exception:', e);
-        alert(`IAP Init Error: ${e.message || e}`);
         if (this.initRetryCount < this.maxRetries) {
           setTimeout(attemptSetup, 2000);
         }
