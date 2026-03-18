@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 
 export const IAP_IDS = {
   coffee: 'com.qingning.mana.tip.coffee',
-  lunch: 'com.qingning.mana.iap.lunch',
+  lunch: 'com.qingning.mana.tip.lunch', // 统一命名模式
 };
 
 /**
@@ -34,14 +34,18 @@ interface CdvPurchaseProduct {
 }
 
 interface CdvPurchaseStore {
+  products: any[];
   register: (products: Array<{ id: string; type: string; platform: string }>) => void;
   when: () => {
     approved: (cb: (transaction: CdvPurchaseTransaction) => void) => void;
     verified: (cb: (receipt: CdvPurchaseReceipt) => void) => void;
+    product: () => {
+      updated: (cb: (product: any) => void) => void;
+    };
   };
   error: (cb: (err: CdvPurchaseError) => void) => void;
   ready: (cb: () => void) => void;
-  initialize: () => void;
+  initialize: (platforms: string[]) => void;
   update: () => void;
   get: (productId: string) => CdvPurchaseProduct | undefined;
   requestPayment: (params: { id: string; platform: string }) => Promise<CdvPurchaseError | null>;
@@ -67,9 +71,12 @@ class IAPUtils {
     }
 
     const setupStore = () => {
-      const globalStore = (window as any).CdvPurchase?.store || (window as any).store;
-      if (!globalStore) {
-        console.warn('IAP: Store plugin not available yet, waiting...');
+      // Build 27: 优先从 CdvPurchase 顶级对象获取
+      const CdvPurchase = (window as any).CdvPurchase;
+      const globalStore = CdvPurchase?.store || (window as any).store;
+      
+      if (!globalStore || !globalStore.register) {
+        console.warn('IAP: Store plugin (v13) not available yet.');
         return false;
       }
 
@@ -77,65 +84,88 @@ class IAPUtils {
       this.initialized = true;
 
       try {
+        // v13 Standard Constants
+        const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
+        const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
+
+        console.log(`IAP: Registering products on platform: ${pPlatform}`);
+
         this.store!.register([
-          { id: IAP_IDS.coffee, type: 'consumable', platform: 'apple-appstore' },
-          { id: IAP_IDS.lunch, type: 'consumable', platform: 'apple-appstore' }
+          { id: IAP_IDS.coffee, type: pType, platform: pPlatform },
+          { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
         ]);
 
-        this.store!.when().approved((transaction: any) => transaction.verify());
-        this.store!.when().verified((receipt: any) => receipt.finish());
+        this.store!.when().approved((transaction: any) => {
+          console.log('IAP: Transaction approved:', transaction.id);
+          transaction.verify();
+        });
+        
+        this.store!.when().verified((receipt: any) => {
+          console.log('IAP: Receipt verified');
+          receipt.finish();
+        });
 
-        (this.store as any).when().product().updated((p: any) => {
-          console.log(`IAP: Product ${p.id} state updated to: ${p.state}`);
+        // Build 27: 更精细的状态监听
+        this.store!.when().product().updated((p: any) => {
+          console.log(`IAP: Product ${p.id} [${p.state}]`);
         });
 
         this.store!.ready(() => {
-          console.log('IAP: Store is READY');
+          console.log('IAP: Store READY callback');
           this.isReady = true;
+          this.store!.update(); // 准备就绪后立刻更新一次
         });
 
         this.store!.error((err: any) => {
-          console.error('IAP Error: ' + JSON.stringify(err));
+          console.error('IAP Global Error:', JSON.stringify(err));
         });
 
-        (this.store as any).initialize();
-        this.store!.update();
-        console.log('IAP: Store initialization successful');
+        // Build 27: v13 初始化需传入平台数组
+        if (typeof (this.store as any).initialize === 'function') {
+          (this.store as any).initialize([pPlatform]);
+          console.log('IAP: store.initialize() called with platform');
+        } else {
+          (window as any).CdvPurchase?.store?.initialize([pPlatform]);
+        }
+        
         return true;
       } catch (e) {
         this.initialized = false;
-        console.error('IAP Init error:', e);
+        console.error('IAP Critical Setup Error:', e);
         return false;
       }
     };
 
-    // 尝试立即初始化
+    // 1. 尝试立即初始化
     if (setupStore()) return;
 
-    // 如果失败，监听系统就绪事件
+    // 2. 监听系统就绪事件
     const handleDeviceReady = () => {
-      console.log('IAP: deviceReady triggered, retrying init...');
-      setupStore();
+      console.log('IAP: deviceready hit');
+      if (!this.initialized) setupStore();
       document.removeEventListener('deviceready', handleDeviceReady);
     };
     document.addEventListener('deviceready', handleDeviceReady);
     
-    // 兜底方案：3秒后最后尝试一次
+    // 3. 兜底方案
     setTimeout(() => {
       if (!this.initialized) {
-        console.log('IAP: Fallback retry...');
+        console.log('IAP: Last resort retry');
         setupStore();
       }
-    }, 3000);
+    }, 4000);
   }
 
   /**
-   * 强制同步。在内购设置面板打开时通过本接口可以唤醒注册。
+   * 强制同步
    */
   public forceSync(): void {
     if (this.store) {
-      console.log('IAP: Force synchronization triggered');
+      console.log('IAP: Syncing...');
       this.store.update();
+    } else {
+      console.log('IAP: Cannot sync, store null. Retrying init.');
+      this.init();
     }
   }
 
@@ -158,43 +188,50 @@ class IAPUtils {
     }
 
     try {
-      // Build 12: Robust product lookup to fix "this.store.get is not a function"
-      const store = this.store as any;
-      const product = store?.get ? store.get(productId) : (window as any).CdvPurchase?.store?.get(productId);
+      const CdvPurchase = (window as any).CdvPurchase;
+      const store = this.store || CdvPurchase?.store;
       
-      // Build 11 Debug: 显式提示产品加载状态
-      // Build 19 Diagnostic Alert Fixed: Safer access to avoid crash if products list is not an array
-      if (!product) {
-        const store = (this.store as any) || (window as any).CdvPurchase?.store;
-        const productsList = store?.products || [];
-        const availableIds = productsList.map((p: any) => p.id).join(', ') || 'NONE';
-        alert(`IAP Error: Product ${productId} not loaded. Registered IDs in memory: [${availableIds}]. Please wait or check internet.`);
+      if (!store) {
+        alert('IAP Error: Store not found even in fallback. Please restart app.');
         return false;
       }
 
-      console.log('IAP Attempting purchase for:', product.id, 'State:', product.state);
+      // Build 27: 更健壮的产品查询
+      const product = store.get ? store.get(productId) : store.products?.find((p: any) => p.id === productId);
+      
+      if (!product) {
+        const productsList = store.products || [];
+        const availableInfo = productsList.map((p: any) => `${p.id}(${p.state})`).join(', ') || 'NONE';
+        const storeState = this.initialized ? 'Initialized' : 'Not-Init';
+        alert(`IAP Error: ${productId} not loaded.\nStore: ${storeState}\nRegistered: [${availableInfo}]\nWait a few seconds.`);
+        return false;
+      }
 
-      // v13 Standard API: Use order() from the default offer
-      const offer = (product as any).getOffer();
+      console.log('IAP: Requesting purchase for:', product.id, 'State:', product.state);
+
+      const offer = (product as any).getOffer ? (product as any).getOffer() : null;
       if (offer) {
         await offer.order();
         return true;
       }
 
-      // Fallback: If offer is missing, trying requestPayment
-      const error = await (this.store as any).requestPayment({
-        id: productId,
-        platform: 'apple-appstore'
-      });
-      
-      if (error) {
-        alert(`IAP Payment Error: ${error.message}`);
-        return false;
+      // v13 Fallback
+      if (typeof store.requestPayment === 'function') {
+        const error = await store.requestPayment({
+          id: productId,
+          platform: CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore'
+        });
+        if (error) {
+          alert(`IAP Payment Error: ${error.message}`);
+          return false;
+        }
+        return true;
       }
-      return true;
+      
+      alert('IAP Error: No valid purchase method found for this product.');
+      return false;
     } catch (e: any) {
       alert(`IAP Exception: ${e.message || e}`);
-      console.error('IAP purchase error:', e);
       return false;
     }
   }
