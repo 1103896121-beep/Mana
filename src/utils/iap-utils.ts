@@ -96,44 +96,55 @@ class IAPUtils {
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
         ]);
 
-        store.when().approved((t: any) => {
-          console.log('IAP: Approved', t.id);
-          t.verify();
-        });
+        // Build 31: 极其保守的事件绑定，避免链式调用崩溃
+        const when = store.when();
+        if (when.approved) {
+          when.approved((t: any) => {
+            console.log('IAP: Approved', t.id);
+            t.verify();
+          });
+        }
         
-        store.when().verified((r: any) => {
-          console.log('IAP: Verified');
-          r.finish();
-        });
+        if (when.verified) {
+          when.verified((r: any) => {
+            console.log('IAP: Verified');
+            r.finish();
+          });
+        }
 
-        store.when().product().updated((p: any) => {
-          console.log(`IAP: Product ${p.id} -> ${p.state}`);
-        });
-
+        // Build 31: 移除导致 Build 30 崩溃的 .product().updated()
+        // 改用更底层的通用监听（如果存在）或直接跳过，状态更新由 store.update() 维护
+        
         store.ready(() => {
           console.log('IAP: Store READY callback');
           this.isReady = true;
-          try { store.update(); } catch(e) {}
+          if (store.update) {
+            try { store.update(); } catch(e) {}
+          }
         });
 
-        store.error((err: any) => {
-          console.error('IAP Store Error:', JSON.stringify(err));
-        });
+        if (store.error) {
+          store.error((err: any) => {
+            console.error('IAP Store Error:', JSON.stringify(err));
+          });
+        }
 
-        // Build 30: 极其保守的初始化调用
+        // Build 31: 极其保守的初始化调用
         console.log('IAP: Initializing for platform:', pPlatform);
-        if (store.initialize) {
+        if (typeof store.initialize === 'function') {
           store.initialize([pPlatform]);
+        } else if (CdvPurchase?.store?.initialize) {
+          CdvPurchase.store.initialize([pPlatform]);
         }
         
         this.initialized = true;
         console.log('IAP: Setup success');
       } catch (e: any) {
         console.error('IAP Setup Exception:', e);
-        // Build 30 Diagnostic: 让错误无处遁形
-        alert(`IAP Setup Crashed: ${e.message || e}\nTrace: ${e.stack ? e.stack.split('\n')[0] : 'No stack'}`);
+        // 为了方便调试，保留 alert，但增加更友好的提示
+        alert(`IAP Init Error: ${e.message || e}\nPlease try again later.`);
         if (this.initRetryCount < this.maxRetries) {
-          setTimeout(attemptSetup, 2000); // 延长重试间隔
+          setTimeout(attemptSetup, 2000);
         }
       }
     };
