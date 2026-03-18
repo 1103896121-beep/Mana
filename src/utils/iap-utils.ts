@@ -55,116 +55,88 @@ class IAPUtils {
   private store: CdvPurchaseStore | null = null;
   private initialized = false;
   public isReady = false;
+  private initRetryCount = 0;
+  private maxRetries = 20; // 500ms * 20 = 10s
 
   /**
    * 初始化商店插件
-   * 仅在原生平台执行。
    */
   public init(): void {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    if (!Capacitor.isNativePlatform()) return;
+    if (this.initialized) return;
 
-    if (this.initialized) {
-      console.log('IAP: Already initialized');
-      return;
-    }
+    const attemptSetup = () => {
+      if (this.initialized) return;
+      this.initRetryCount++;
 
-    const setupStore = () => {
-      // Build 27: 优先从 CdvPurchase 顶级对象获取
-      const CdvPurchase = (window as any).CdvPurchase;
-      const globalStore = CdvPurchase?.store || (window as any).store;
-      
-      if (!globalStore || !globalStore.register) {
-        console.warn('IAP: Store plugin (v13) not available yet.');
-        return false;
+      const win = window as any;
+      const CdvPurchase = win.CdvPurchase;
+      const store = CdvPurchase?.store || win.store;
+
+      if (!store || !store.register) {
+        if (this.initRetryCount < this.maxRetries) {
+          console.log(`IAP: Waiting for store plugin... (Attempt ${this.initRetryCount})`);
+          setTimeout(attemptSetup, 500);
+        } else {
+          console.error('IAP: Max retries reached, store plugin not found.');
+        }
+        return;
       }
 
-      this.store = globalStore;
-      this.initialized = true;
+      console.log('IAP: Store plugin found, starting setup...');
+      this.store = store;
 
       try {
-        // v13 Standard Constants
         const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
         const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
 
-        console.log(`IAP: Registering products on platform: ${pPlatform}`);
-
-        this.store!.register([
+        store.register([
           { id: IAP_IDS.coffee, type: pType, platform: pPlatform },
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
         ]);
 
-        this.store!.when().approved((transaction: any) => {
-          console.log('IAP: Transaction approved:', transaction.id);
-          transaction.verify();
-        });
-        
-        this.store!.when().verified((receipt: any) => {
-          console.log('IAP: Receipt verified');
-          receipt.finish();
+        store.when().approved((t: any) => t.verify());
+        store.when().verified((r: any) => r.finish());
+        store.when().product().updated((p: any) => {
+          console.log(`IAP: Product ${p.id} state: ${p.state}`);
         });
 
-        // Build 27: 更精细的状态监听
-        this.store!.when().product().updated((p: any) => {
-          console.log(`IAP: Product ${p.id} [${p.state}]`);
-        });
-
-        this.store!.ready(() => {
-          console.log('IAP: Store READY callback');
+        store.ready(() => {
+          console.log('IAP: Store READY');
           this.isReady = true;
-          this.store!.update(); // 准备就绪后立刻更新一次
+          store.update();
         });
 
-        this.store!.error((err: any) => {
-          console.error('IAP Global Error:', JSON.stringify(err));
+        store.error((err: any) => {
+          console.error('IAP Error:', JSON.stringify(err));
         });
 
-        // Build 27: v13 初始化需传入平台数组
-        if (typeof (this.store as any).initialize === 'function') {
-          (this.store as any).initialize([pPlatform]);
-          console.log('IAP: store.initialize() called with platform');
-        } else {
-          (window as any).CdvPurchase?.store?.initialize([pPlatform]);
-        }
+        // v13 初始化
+        console.log('IAP: Calling initialize...');
+        store.initialize([pPlatform]);
         
-        return true;
+        this.initialized = true;
+        console.log('IAP: Setup completed successfully');
       } catch (e) {
-        this.initialized = false;
-        console.error('IAP Critical Setup Error:', e);
-        return false;
+        console.error('IAP Setup Exception:', e);
+        if (this.initRetryCount < this.maxRetries) {
+          setTimeout(attemptSetup, 1000);
+        }
       }
     };
 
-    // 1. 尝试立即初始化
-    if (setupStore()) return;
-
-    // 2. 监听系统就绪事件
-    const handleDeviceReady = () => {
-      console.log('IAP: deviceready hit');
-      if (!this.initialized) setupStore();
-      document.removeEventListener('deviceready', handleDeviceReady);
-    };
-    document.addEventListener('deviceready', handleDeviceReady);
-    
-    // 3. 兜底方案
-    setTimeout(() => {
-      if (!this.initialized) {
-        console.log('IAP: Last resort retry');
-        setupStore();
-      }
-    }, 4000);
+    attemptSetup();
   }
 
   /**
    * 强制同步
    */
   public forceSync(): void {
-    if (this.store) {
-      console.log('IAP: Syncing...');
+    if (this.store && this.initialized) {
+      console.log('IAP: Forcing update...');
       this.store.update();
     } else {
-      console.log('IAP: Cannot sync, store null. Retrying init.');
+      console.log('IAP: Force sync triggered but not init, calling init...');
       this.init();
     }
   }
