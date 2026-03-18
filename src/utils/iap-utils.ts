@@ -58,6 +58,7 @@ class IAPUtils {
   private initRetryCount = 0;
   private maxRetries = 20; // 500ms * 20 = 10s
   public onPurchaseSuccess?: () => void;
+  private isActivelyPurchasing = false;
 
   /**
    * 初始化商店插件
@@ -111,7 +112,8 @@ class IAPUtils {
           when.verified((r: any) => {
             console.log('IAP: Verified');
             r.finish();
-            if (this.onPurchaseSuccess) {
+            if (this.onPurchaseSuccess && this.isActivelyPurchasing) {
+              this.isActivelyPurchasing = false;
               this.onPurchaseSuccess();
             }
           });
@@ -206,6 +208,7 @@ class IAPUtils {
       }
 
       console.log('IAP: Requesting purchase for:', product.id, 'State:', product.state);
+      this.isActivelyPurchasing = true;
 
       const offer = (product as any).getOffer ? (product as any).getOffer() : null;
       if (offer) {
@@ -227,9 +230,11 @@ class IAPUtils {
       }
       
       alert('IAP Error: No valid purchase method found for this product.');
+      this.isActivelyPurchasing = false;
       return false;
     } catch (e: any) {
       alert(`IAP Exception: ${e.message || e}`);
+      this.isActivelyPurchasing = false;
       return false;
     }
   }
