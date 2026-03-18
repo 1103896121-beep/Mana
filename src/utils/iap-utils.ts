@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 
 export const IAP_IDS = {
   coffee: 'com.qingning.mana.tip.coffee',
-  lunch: 'com.qingning.mana.tip.lunch', // 统一命名模式
+  lunch: 'com.qingning.mana.iap.lunch', // 恢复为正确的 ID
 };
 
 /**

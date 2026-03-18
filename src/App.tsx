@@ -68,10 +68,13 @@ const App: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [isPurchasing, setIsPurchasing] = useState(false);
 
+  // Build 29: 确保 IAP 仅在组件挂载时初始化一次，不再受主题切换干扰
+  useEffect(() => {
+    iapUtils.init();
+  }, []);
+
   useEffect(() => {
     document.body.dataset.theme = theme;
-    // Build 21.1: 恢复在挂载及主题切换时初始化 IAP
-    iapUtils.init();
   }, [theme]);
 
   const toggleTheme = () => {
@@ -223,8 +226,9 @@ const App: React.FC = () => {
           axis="y" 
           values={displayTasks} 
           onReorder={(newOrder) => {
+            // Build 29: 严格按顺序执行：先同步切换为手动模式，再更新数据源
+            setSortField('manual');
             setTasks(newOrder);
-            setSortField('manual'); // Build 21.1: 拖拽时自动切换为手动模式，防止回弹
           }} 
           className="bubble-list-container"
         >
