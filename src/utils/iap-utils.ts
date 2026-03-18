@@ -87,16 +87,26 @@ class IAPUtils {
       this.store = store;
 
       try {
-        console.log('IAP: Starting store registration');
         const pType = CdvPurchase?.ProductType?.CONSUMABLE || 'consumable';
         const pPlatform = CdvPurchase?.Platform?.APPLE_APPSTORE || 'apple-appstore';
+        
+        // Build 32: 打印所有可用平台以作后续诊断
+        const availablePlatforms = CdvPurchase?.Platform ? Object.keys(CdvPurchase.Platform).join(', ') : 'unknown';
+        console.log(`IAP: Available platforms in plugin: [${availablePlatforms}]`);
+        console.log(`IAP: Using platform constant: ${pPlatform}`);
 
+        // Build 32: 两阶段注册策略
+        // 1. 带平台标识符注册
         store.register([
           { id: IAP_IDS.coffee, type: pType, platform: pPlatform },
           { id: IAP_IDS.lunch, type: pType, platform: pPlatform }
         ]);
+        // 2. 盲投注册（不带平台，由插件自行决定）
+        store.register([
+          { id: IAP_IDS.coffee, type: pType },
+          { id: IAP_IDS.lunch, type: pType }
+        ]);
 
-        // Build 31: 极其保守的事件绑定，避免链式调用崩溃
         const when = store.when();
         if (when.approved) {
           when.approved((t: any) => {
@@ -112,12 +122,12 @@ class IAPUtils {
           });
         }
 
-        // Build 31: 移除导致 Build 30 崩溃的 .product().updated()
-        // 改用更底层的通用监听（如果存在）或直接跳过，状态更新由 store.update() 维护
-        
         store.ready(() => {
-          console.log('IAP: Store READY callback');
+          console.log('IAP: Store READY');
           this.isReady = true;
+          // Build 32: 检查注册后的内存状态
+          const pList = store.products || [];
+          console.log(`IAP: Ready! Registered products in memory: ${pList.length}`);
           if (store.update) {
             try { store.update(); } catch(e) {}
           }
@@ -129,8 +139,7 @@ class IAPUtils {
           });
         }
 
-        // Build 31: 极其保守的初始化调用
-        console.log('IAP: Initializing for platform:', pPlatform);
+        console.log('IAP: Initializing...');
         if (typeof store.initialize === 'function') {
           store.initialize([pPlatform]);
         } else if (CdvPurchase?.store?.initialize) {
@@ -141,8 +150,7 @@ class IAPUtils {
         console.log('IAP: Setup success');
       } catch (e: any) {
         console.error('IAP Setup Exception:', e);
-        // 为了方便调试，保留 alert，但增加更友好的提示
-        alert(`IAP Init Error: ${e.message || e}\nPlease try again later.`);
+        alert(`IAP Init Error: ${e.message || e}`);
         if (this.initRetryCount < this.maxRetries) {
           setTimeout(attemptSetup, 2000);
         }
